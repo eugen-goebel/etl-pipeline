@@ -225,12 +225,18 @@ def page_sql_explorer():
             st.dataframe(df, use_container_width=True)
 
     st.subheader("Custom SQL")
-    custom_sql = st.text_area("Enter SQL query", height=150, placeholder="SELECT * FROM fact_sales LIMIT 10")
+    custom_sql = st.text_area("Enter SQL query (read-only)", height=150, placeholder="SELECT * FROM fact_sales LIMIT 10")
     if st.button("Run Custom SQL"):
-        if custom_sql.strip():
+        sql_stripped = custom_sql.strip().upper()
+        forbidden = ("INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "ATTACH", "DETACH", "PRAGMA")
+        if any(sql_stripped.startswith(kw) for kw in forbidden):
+            st.error("Only SELECT queries are allowed.")
+        elif custom_sql.strip():
             try:
                 df = engine.execute_raw(custom_sql)
                 st.dataframe(df, use_container_width=True)
+            except (ValueError, TypeError) as exc:
+                st.error(f"Invalid query: {exc}")
             except Exception as exc:
                 st.error(f"Query failed: {exc}")
 

@@ -24,7 +24,7 @@ def get_engine(db_path: str | None = None):
 
 def execute_sql(sql: str, engine=None, params: dict | None = None):
     """Execute raw SQL and return results as list of dicts."""
-    eng = engine or globals()["engine"]
+    eng = engine if engine is not None else get_engine()
     with eng.connect() as conn:
         result = conn.execute(text(sql), params or {})
         if result.returns_rows:

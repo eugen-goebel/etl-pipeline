@@ -22,7 +22,11 @@ class AnalyticsEngine:
         return pd.read_sql(sql, self.engine)
 
     def execute_raw(self, sql: str) -> pd.DataFrame:
-        """Execute arbitrary read-only SQL."""
+        """Execute a read-only SQL query. Rejects write operations."""
+        normalized = sql.strip().upper()
+        forbidden = ("INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "ATTACH", "DETACH", "PRAGMA")
+        if any(normalized.startswith(kw) for kw in forbidden):
+            raise ValueError("Only SELECT queries are allowed")
         return pd.read_sql(sql, self.engine)
 
     def get_kpis(self) -> dict:

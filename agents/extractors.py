@@ -1,8 +1,8 @@
 """Data extractors for CSV, JSON, and mock API sources."""
 
-import os, json, csv
+import os
+import json
 import pandas as pd
-from models.sources import RawOrder, RawCustomer, RawProduct, RawSupplier, RawReturn, RawShippingEvent
 
 
 class CSVExtractor:
