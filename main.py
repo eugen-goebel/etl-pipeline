@@ -99,6 +99,12 @@ def main():
         action="store_true",
         help="List available SQL queries and exit",
     )
+    parser.add_argument(
+        "--mode",
+        choices=["full", "incremental"],
+        default="full",
+        help="Load mode: 'full' replaces all data, 'incremental' only processes new/changed records (default: full)",
+    )
     args = parser.parse_args()
 
     if args.list_queries:
@@ -113,6 +119,7 @@ def main():
     orchestrator = PipelineOrchestrator(
         data_dir=args.data_dir,
         db_path=args.db_path,
+        mode=args.mode,
     )
     result = orchestrator.run()
     print_summary(result)

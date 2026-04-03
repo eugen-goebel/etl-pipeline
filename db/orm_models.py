@@ -103,3 +103,13 @@ class DataQualityIssueTable(Base):
     value = Column(String, nullable=False)
     rule = Column(String, nullable=False)
     message = Column(String, nullable=False)
+
+
+class LoadMetadataTable(Base):
+    __tablename__ = "load_metadata"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    table_name = Column(String, unique=True, nullable=False)
+    last_load_at = Column(String, nullable=False)
+    records_processed = Column(Integer, nullable=False, default=0)
+    load_mode = Column(String, nullable=False, default="full")
