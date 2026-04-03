@@ -44,9 +44,11 @@ class PipelineResult:
 class PipelineOrchestrator:
     """Coordinates the full ETL pipeline across six phases."""
 
-    def __init__(self, data_dir: str = "data", db_path: str = "output/shopflow.db"):
+    def __init__(self, data_dir: str = "data", db_path: str = "output/shopflow.db",
+                 mode: str = "full"):
         self.data_dir = data_dir
         self.db_path = db_path
+        self.mode = mode
 
     def run(self) -> PipelineResult:
         """Execute the complete ETL pipeline and return consolidated results."""
@@ -136,7 +138,7 @@ class PipelineOrchestrator:
         print(f"      completed in {phase_dur:.2f}s")
 
         # ── Phase 5: Load ───────────────────────────────────────────────
-        print("[5/6] Load -- writing to database")
+        print(f"[5/6] Load -- writing to database ({self.mode} mode)")
         t0 = time.time()
 
         # Build quality issues DataFrame for persistence
@@ -147,14 +149,26 @@ class PipelineOrchestrator:
         quality_issues_df = pd.DataFrame(quality_rows) if quality_rows else None
 
         loader = DatabaseLoader(self.db_path)
-        loader.load(
-            dim_date=dim_date,
-            dim_customer=dim_customer,
-            dim_product=dim_product,
-            dim_supplier=dim_supplier,
-            fact_sales=fact_sales,
-            quality_issues=quality_issues_df,
-        )
+        if self.mode == "incremental":
+            new_count = loader.load_incremental(
+                dim_date=dim_date,
+                dim_customer=dim_customer,
+                dim_product=dim_product,
+                dim_supplier=dim_supplier,
+                fact_sales=fact_sales,
+                quality_issues=quality_issues_df,
+            )
+            if new_count is not None:
+                print(f"      new fact rows: {new_count}")
+        else:
+            loader.load(
+                dim_date=dim_date,
+                dim_customer=dim_customer,
+                dim_product=dim_product,
+                dim_supplier=dim_supplier,
+                fact_sales=fact_sales,
+                quality_issues=quality_issues_df,
+            )
 
         phase_dur = time.time() - t0
         phases.append(PhaseResult("load", phase_dur))
