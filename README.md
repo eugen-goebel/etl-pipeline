@@ -11,11 +11,14 @@ Multi-agent ETL pipeline that transforms raw e-commerce data into a star schema 
 **Executive Overview** — KPI cards and monthly revenue trend
 ![Overview](docs/screenshots/01-overview.png)
 
+**Revenue by Category** — cross-category performance breakdown
+![Revenue by Category](docs/screenshots/02-revenue-category.png)
+
 **Customer Analytics** — RFM segmentation and cohort retention heatmap
-![Customer Analytics](docs/screenshots/02-customer-analytics.png)
+![Customer Analytics](docs/screenshots/03-customer-analytics.png)
 
 **SQL Explorer** — run pre-built or custom SQL queries against the warehouse
-![SQL Explorer](docs/screenshots/03-sql-explorer.png)
+![SQL Explorer](docs/screenshots/04-sql-explorer.png)
 
 ## Architecture
 
