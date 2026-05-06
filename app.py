@@ -52,7 +52,9 @@ def check_db():
         try:
             build_demo_db()
         except Exception as exc:
+            import traceback
             st.error(f"Failed to build demo database: {exc}")
+            st.code(traceback.format_exc(), language="text")
             st.stop()
     st.rerun()
 
