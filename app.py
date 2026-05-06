@@ -1,6 +1,8 @@
 """Streamlit dashboard for ShopFlow analytics."""
 
 import os
+import subprocess
+import sys
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -17,10 +19,42 @@ sns.set_style("whitegrid")
 st.set_page_config(page_title="ShopFlow Analytics", layout="wide")
 
 
+def build_demo_db():
+    """Generate sample data and run the ETL pipeline to create the demo DB.
+
+    Used by hosted deploys (e.g. Streamlit Cloud) where the database is not
+    pre-built. Locally, prefer `python main.py --generate`.
+    """
+    repo_dir = os.path.dirname(os.path.abspath(__file__))
+    generator = os.path.join(repo_dir, "data", "generate_sample_data.py")
+
+    subprocess.run([sys.executable, generator], check=True, cwd=repo_dir)
+
+    from agents.orchestrator import PipelineOrchestrator
+
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    orchestrator = PipelineOrchestrator(
+        data_dir=os.path.join(repo_dir, "data"),
+        db_path=DB_PATH,
+        mode="full",
+    )
+    orchestrator.run()
+
+
 def check_db():
-    if not os.path.exists(DB_PATH):
-        st.error("Database not found. Run `python main.py --generate` first.")
-        st.stop()
+    if os.path.exists(DB_PATH):
+        return
+
+    with st.spinner(
+        "First-time setup: generating sample data and running the ETL "
+        "pipeline. This takes ~30 seconds and only happens once per deploy."
+    ):
+        try:
+            build_demo_db()
+        except Exception as exc:
+            st.error(f"Failed to build demo database: {exc}")
+            st.stop()
+    st.rerun()
 
 
 @st.cache_data(ttl=300)
