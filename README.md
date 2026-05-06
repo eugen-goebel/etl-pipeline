@@ -6,6 +6,8 @@ Multi-agent ETL pipeline that transforms raw e-commerce data into a star schema 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+> **Try it live:** _(Streamlit Cloud demo URL will be added once deployed.)_
+
 ## Screenshots
 
 **Executive Overview** — KPI cards and monthly revenue trend
