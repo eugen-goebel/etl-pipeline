@@ -10,6 +10,7 @@ import matplotlib.ticker as ticker
 import seaborn as sns
 
 from agents.analytics_engine import AnalyticsEngine
+from agents import run_recorder
 from db.database import get_engine, execute_sql
 
 DB_PATH = "output/shopflow.db"
@@ -277,6 +278,62 @@ def page_sql_explorer():
                 st.error(f"Query failed: {exc}")
 
 
+def page_pipeline_runs():
+    st.header("Pipeline Runs")
+    st.caption("Observability for the orchestrator — each run is logged to the etl_runs table.")
+
+    runs = run_recorder.list_runs(DB_PATH, limit=50)
+    if not runs:
+        st.info(
+            "No runs recorded yet. Trigger a pipeline run via `python main.py` "
+            "(or the auto-build on first start) and refresh this page."
+        )
+        return
+
+    df = pd.DataFrame(runs)
+    df["started_at"] = pd.to_datetime(df["started_at"])
+    df["finished_at"] = pd.to_datetime(df["finished_at"])
+
+    # KPI strip
+    total_runs = len(df)
+    success_runs = int((df["status"] == "success").sum())
+    failed_runs = int((df["status"] == "failed").sum())
+    success_rate = (success_runs / total_runs * 100) if total_runs else 0.0
+    avg_duration = df["duration_seconds"].dropna().mean() if not df.empty else 0.0
+
+    cols = st.columns(4)
+    cols[0].metric("Total runs", total_runs)
+    cols[1].metric("Success rate", f"{success_rate:.0f}%")
+    cols[2].metric("Failures", failed_runs)
+    cols[3].metric("Avg duration", f"{avg_duration:.2f}s" if avg_duration else "—")
+
+    # Trend
+    if df["duration_seconds"].notna().sum() >= 2:
+        st.subheader("Duration over time")
+        trend_df = df.sort_values("started_at").set_index("started_at")[["duration_seconds"]]
+        st.line_chart(trend_df)
+
+    # Table
+    st.subheader("Recent runs")
+    display_cols = [
+        "run_id", "started_at", "duration_seconds", "mode", "status",
+        "quality_score", "error_message",
+    ]
+    st.dataframe(df[display_cols], use_container_width=True, hide_index=True)
+
+    # Latest-run drill-down
+    latest = df.iloc[0]
+    st.subheader(f"Run #{latest['run_id']} — phase breakdown")
+    timings = latest.get("phase_timings") or {}
+    if timings:
+        timings_df = pd.DataFrame(
+            {"phase": list(timings.keys()), "seconds": list(timings.values())}
+        )
+        st.bar_chart(timings_df.set_index("phase"))
+    else:
+        st.caption("No per-phase timings recorded for the latest run.")
+
+
 def main():
     check_db()
 
@@ -284,7 +341,7 @@ def main():
     page = st.sidebar.radio(
         "Navigation",
         ["Executive Overview", "Customer Analytics", "Product & Supply Chain",
-         "Data Quality", "SQL Explorer"],
+         "Data Quality", "Pipeline Runs", "SQL Explorer"],
     )
 
     pages = {
@@ -292,6 +349,7 @@ def main():
         "Customer Analytics": page_customers,
         "Product & Supply Chain": page_products,
         "Data Quality": page_quality,
+        "Pipeline Runs": page_pipeline_runs,
         "SQL Explorer": page_sql_explorer,
     }
     pages[page]()

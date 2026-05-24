@@ -9,6 +9,7 @@ from agents.transformers import DataCleaner, DataEnricher
 from agents.dimension_builder import DimensionBuilder, FactBuilder
 from agents.loader import DatabaseLoader
 from agents.analytics_engine import AnalyticsEngine
+from agents import run_recorder
 from models.quality import DataQualityReport
 
 
@@ -56,6 +57,51 @@ class PipelineOrchestrator:
         phases: list[PhaseResult] = []
         row_counts: dict[str, int] = {}
 
+        run_id = None
+        try:
+            run_id = run_recorder.start_run(self.db_path, mode=self.mode)
+        except Exception as exc:  # noqa: BLE001 — observability must not block ETL
+            print(f"      [run-recorder] could not start run record: {exc}")
+
+        try:
+            result = self._execute(pipeline_start, phases, row_counts)
+        except Exception as exc:
+            if run_id is not None:
+                try:
+                    run_recorder.finish_run(
+                        self.db_path,
+                        run_id,
+                        status="failed",
+                        error_message=str(exc),
+                        phase_timings={p.name: p.duration for p in phases},
+                        row_counts=row_counts,
+                    )
+                except Exception as inner:  # noqa: BLE001
+                    print(f"      [run-recorder] could not finalize failed run: {inner}")
+            raise
+
+        if run_id is not None:
+            try:
+                run_recorder.finish_run(
+                    self.db_path,
+                    run_id,
+                    status="success",
+                    quality_score=result.quality_report.overall_score,
+                    phase_timings={p.name: p.duration for p in result.phases},
+                    row_counts=result.row_counts,
+                )
+            except Exception as exc:  # noqa: BLE001
+                print(f"      [run-recorder] could not finalize successful run: {exc}")
+
+        return result
+
+    def _execute(
+        self,
+        pipeline_start: float,
+        phases: list[PhaseResult],
+        row_counts: dict[str, int],
+    ) -> PipelineResult:
+        """Inner pipeline body — split out so the recorder can wrap it."""
         # ── Phase 1: Extract ────────────────────────────────────────────
         print("[1/6] Extract -- loading raw sources")
         t0 = time.time()
