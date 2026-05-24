@@ -1,9 +1,36 @@
 """Tests for the ETL pipeline run recorder."""
 
+import os
+import subprocess
+import sys
+from pathlib import Path
+
 import pytest
 
 from agents import run_recorder
 from agents.orchestrator import PipelineOrchestrator
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+RAW_DATA_DIR = REPO_ROOT / "data" / "raw"
+
+
+@pytest.fixture(scope="module")
+def ensure_sample_data():
+    """Generate sample CSV/JSON inputs once if they are not already present.
+
+    Mirrors the auto-build that the Streamlit app does on first start so
+    integration tests are self-sufficient on CI.
+    """
+    if RAW_DATA_DIR.exists() and any(RAW_DATA_DIR.iterdir()):
+        return
+    generator = REPO_ROOT / "data" / "generate_sample_data.py"
+    subprocess.run(
+        [sys.executable, str(generator)],
+        cwd=REPO_ROOT,
+        check=True,
+        env={**os.environ, "PYTHONPATH": str(REPO_ROOT)},
+    )
 
 
 class TestStartFinish:
@@ -78,7 +105,7 @@ class TestListRuns:
 class TestOrchestratorIntegration:
     """The full pipeline must persist exactly one run record on success."""
 
-    def test_successful_run_records_one_row(self, db_path):
+    def test_successful_run_records_one_row(self, db_path, ensure_sample_data):
         orc = PipelineOrchestrator(data_dir="data", db_path=db_path, mode="full")
         orc.run()
 
