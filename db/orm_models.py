@@ -1,6 +1,6 @@
 """SQLAlchemy ORM models for the star schema."""
 
-from sqlalchemy import Column, Integer, String, Float, Boolean, Date, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, Float, Boolean, Date, DateTime, ForeignKey, Index, JSON
 from db.database import Base
 
 
@@ -113,3 +113,20 @@ class LoadMetadataTable(Base):
     last_load_at = Column(String, nullable=False)
     records_processed = Column(Integer, nullable=False, default=0)
     load_mode = Column(String, nullable=False, default="full")
+
+
+class ETLRunTable(Base):
+    """One row per pipeline run — observability for the orchestrator."""
+
+    __tablename__ = "etl_runs"
+
+    run_id = Column(Integer, primary_key=True, autoincrement=True)
+    started_at = Column(DateTime, nullable=False)
+    finished_at = Column(DateTime, nullable=True)
+    duration_seconds = Column(Float, nullable=True)
+    mode = Column(String, nullable=False, default="full")
+    status = Column(String, nullable=False, default="running")  # running | success | failed
+    error_message = Column(String, nullable=True)
+    quality_score = Column(Float, nullable=True)
+    phase_timings = Column(JSON, nullable=True)
+    row_counts = Column(JSON, nullable=True)
