@@ -7,20 +7,20 @@ Multi-agent ETL pipeline that transforms raw e-commerce data into a star schema 
 ![License](https://img.shields.io/badge/License-MIT-green)
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Streamlit_Cloud-FF4B4B?style=flat)](https://eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app/)
 
-> **Try it live:** [eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app](https://eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app/) — fully hosted, no setup. The demo database is auto-generated on first visit (~30s); after that you can explore the dashboard, KPIs, and SQL Explorer interactively.
+> **Try it live:** [eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app](https://eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app/). Fully hosted, no setup. The demo database is auto-generated on first visit (~30s); after that you can explore the dashboard, KPIs, and SQL Explorer interactively.
 
 ## Screenshots
 
-**Executive Overview** — KPI cards and monthly revenue trend
+**Executive Overview**: KPI cards and monthly revenue trend
 ![Overview](docs/screenshots/01-overview.png)
 
-**Revenue by Category** — cross-category performance breakdown
+**Revenue by Category**: cross-category performance breakdown
 ![Revenue by Category](docs/screenshots/02-revenue-category.png)
 
-**Customer Analytics** — RFM segmentation and cohort retention heatmap
+**Customer Analytics**: RFM segmentation and cohort retention heatmap
 ![Customer Analytics](docs/screenshots/03-customer-analytics.png)
 
-**SQL Explorer** — run pre-built or custom SQL queries against the warehouse
+**SQL Explorer**: run pre-built or custom SQL queries against the warehouse
 ![SQL Explorer](docs/screenshots/04-sql-explorer.png)
 
 ## Architecture
