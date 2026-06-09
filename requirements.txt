@@ -1,6 +1,6 @@
 streamlit>=1.40.0
-pandas>=2.0.0,<3.0.0
-numpy>=1.24.0,<3.0.0
+pandas>=2.0.0
+numpy>=1.24.0
 sqlalchemy>=2.0.49
 pydantic>=2.13.4
 matplotlib>=3.10.9
