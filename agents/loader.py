@@ -7,13 +7,9 @@ import pandas as pd
 from sqlalchemy import text
 
 from db.database import Base, get_engine
-from db.orm_models import (DimDateTable, DimCustomerTable, DimSupplierTable,
-                           DimProductTable, FactSalesTable, AggDailySalesTable,
-                           DataQualityIssueTable, LoadMetadataTable)
 
 
 class DatabaseLoader:
-
     def __init__(self, db_path: str = "output/shopflow.db"):
         self.engine = get_engine(db_path)
         self.db_path = db_path
@@ -56,8 +52,15 @@ class DatabaseLoader:
                 {"t": table_name, "ts": now, "r": records, "m": mode},
             )
 
-    def load(self, dim_date: pd.DataFrame, dim_customer: pd.DataFrame, dim_product: pd.DataFrame,
-             dim_supplier: pd.DataFrame, fact_sales: pd.DataFrame, quality_issues: pd.DataFrame | None = None):
+    def load(
+        self,
+        dim_date: pd.DataFrame,
+        dim_customer: pd.DataFrame,
+        dim_product: pd.DataFrame,
+        dim_supplier: pd.DataFrame,
+        fact_sales: pd.DataFrame,
+        quality_issues: pd.DataFrame | None = None,
+    ):
         """Full refresh load -- replace all table contents within a transaction."""
         self.initialize()
 
@@ -80,7 +83,9 @@ class DatabaseLoader:
         fact_sales.to_sql("fact_sales", self.engine, if_exists="append", index=False)
 
         if quality_issues is not None and len(quality_issues) > 0:
-            quality_issues.to_sql("data_quality_issues", self.engine, if_exists="append", index=False)
+            quality_issues.to_sql(
+                "data_quality_issues", self.engine, if_exists="append", index=False
+            )
 
         # Update metadata for each table
         with self.engine.begin() as conn:
@@ -93,17 +98,24 @@ class DatabaseLoader:
         # Build aggregates
         self._build_aggregates()
 
-    def load_incremental(self, dim_date: pd.DataFrame, dim_customer: pd.DataFrame,
-                         dim_product: pd.DataFrame, dim_supplier: pd.DataFrame,
-                         fact_sales: pd.DataFrame, quality_issues: pd.DataFrame | None = None):
+    def load_incremental(
+        self,
+        dim_date: pd.DataFrame,
+        dim_customer: pd.DataFrame,
+        dim_product: pd.DataFrame,
+        dim_supplier: pd.DataFrame,
+        fact_sales: pd.DataFrame,
+        quality_issues: pd.DataFrame | None = None,
+    ):
         """Incremental load -- upsert dimensions and append new facts."""
         self.initialize()
 
         # If no prior load exists, fall back to full load
         if self.get_last_load("fact_sales") is None:
             print("      no prior load found, falling back to full refresh")
-            return self.load(dim_date, dim_customer, dim_product, dim_supplier,
-                             fact_sales, quality_issues)
+            return self.load(
+                dim_date, dim_customer, dim_product, dim_supplier, fact_sales, quality_issues
+            )
 
         # Upsert dimensions
         dim_tables = [
@@ -123,7 +135,9 @@ class DatabaseLoader:
             new_facts.to_sql("fact_sales", self.engine, if_exists="append", index=False)
 
         if quality_issues is not None and len(quality_issues) > 0:
-            quality_issues.to_sql("data_quality_issues", self.engine, if_exists="append", index=False)
+            quality_issues.to_sql(
+                "data_quality_issues", self.engine, if_exists="append", index=False
+            )
 
         # Update metadata
         with self.engine.begin() as conn:
@@ -146,9 +160,7 @@ class DatabaseLoader:
         with self.engine.begin() as conn:
             existing_keys = {
                 row[0]
-                for row in conn.execute(
-                    text(f"SELECT {key_col} FROM {table_name}")
-                ).fetchall()
+                for row in conn.execute(text(f"SELECT {key_col} FROM {table_name}")).fetchall()
             }
 
         # Split into updates and inserts
@@ -176,10 +188,7 @@ class DatabaseLoader:
         """Return only fact rows whose order_key does not exist yet."""
         with self.engine.connect() as conn:
             existing = {
-                row[0]
-                for row in conn.execute(
-                    text("SELECT order_key FROM fact_sales")
-                ).fetchall()
+                row[0] for row in conn.execute(text("SELECT order_key FROM fact_sales")).fetchall()
             }
         return fact_sales[~fact_sales["order_key"].isin(existing)]
 

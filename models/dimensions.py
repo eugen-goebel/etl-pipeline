@@ -1,7 +1,8 @@
 """Pydantic models for star schema dimension and fact records."""
 
-from pydantic import BaseModel
 from datetime import date
+
+from pydantic import BaseModel
 
 
 class DimDate(BaseModel):

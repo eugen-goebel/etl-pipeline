@@ -3,15 +3,16 @@
 import os
 import subprocess
 import sys
-import streamlit as st
-import pandas as pd
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import pandas as pd
 import seaborn as sns
+import streamlit as st
 
-from agents.analytics_engine import AnalyticsEngine
 from agents import run_recorder
-from db.database import get_engine, execute_sql
+from agents.analytics_engine import AnalyticsEngine
+from db.database import execute_sql, get_engine
 
 DB_PATH = "output/shopflow.db"
 COLORS = ["#1f77b4", "#2ca02c", "#17becf", "#ff7f0e", "#9467bd", "#d62728"]
@@ -54,6 +55,7 @@ def check_db():
             build_demo_db()
         except Exception as exc:
             import traceback
+
             st.error(f"Failed to build demo database: {exc}")
             st.code(traceback.format_exc(), language="text")
             st.stop()
@@ -110,7 +112,7 @@ def page_overview():
         GROUP BY p.category ORDER BY revenue DESC
     """)
     fig2, ax2 = plt.subplots(figsize=(8, 4))
-    ax2.barh(cat_df["category"], cat_df["revenue"], color=COLORS[:len(cat_df)])
+    ax2.barh(cat_df["category"], cat_df["revenue"], color=COLORS[: len(cat_df)])
     ax2.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     ax2.set_xlabel("Revenue")
     plt.tight_layout()
@@ -127,18 +129,28 @@ def page_customers():
         rfm = load_query("rfm_segmentation")
         seg_counts = rfm["segment"].value_counts()
         fig, ax = plt.subplots(figsize=(6, 6))
-        ax.pie(seg_counts.values, labels=seg_counts.index, autopct="%1.1f%%",
-               colors=COLORS[:len(seg_counts)])
+        ax.pie(
+            seg_counts.values,
+            labels=seg_counts.index,
+            autopct="%1.1f%%",
+            colors=COLORS[: len(seg_counts)],
+        )
         plt.tight_layout()
         st.pyplot(fig)
 
     with col2:
         st.subheader("Cohort Retention")
         cohort = load_query("cohort_retention")
-        if not cohort.empty and "cohort_month" in cohort.columns and "months_since_first" in cohort.columns:
+        if (
+            not cohort.empty
+            and "cohort_month" in cohort.columns
+            and "months_since_first" in cohort.columns
+        ):
             pivot = cohort.pivot_table(
-                index="cohort_month", columns="months_since_first",
-                values="active_customers", aggfunc="sum"
+                index="cohort_month",
+                columns="months_since_first",
+                values="active_customers",
+                aggfunc="sum",
             )
             fig2, ax2 = plt.subplots(figsize=(8, 6))
             sns.heatmap(pivot, annot=True, fmt=".0f", cmap="Blues", ax=ax2)
@@ -262,10 +274,22 @@ def page_sql_explorer():
             st.dataframe(df, use_container_width=True)
 
     st.subheader("Custom SQL")
-    custom_sql = st.text_area("Enter SQL query (read-only)", height=150, placeholder="SELECT * FROM fact_sales LIMIT 10")
+    custom_sql = st.text_area(
+        "Enter SQL query (read-only)", height=150, placeholder="SELECT * FROM fact_sales LIMIT 10"
+    )
     if st.button("Run Custom SQL"):
         sql_stripped = custom_sql.strip().upper()
-        forbidden = ("INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "ATTACH", "DETACH", "PRAGMA")
+        forbidden = (
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+            "DROP",
+            "ALTER",
+            "CREATE",
+            "ATTACH",
+            "DETACH",
+            "PRAGMA",
+        )
         if any(sql_stripped.startswith(kw) for kw in forbidden):
             st.error("Only SELECT queries are allowed.")
         elif custom_sql.strip():
@@ -316,8 +340,13 @@ def page_pipeline_runs():
     # Table
     st.subheader("Recent runs")
     display_cols = [
-        "run_id", "started_at", "duration_seconds", "mode", "status",
-        "quality_score", "error_message",
+        "run_id",
+        "started_at",
+        "duration_seconds",
+        "mode",
+        "status",
+        "quality_score",
+        "error_message",
     ]
     st.dataframe(df[display_cols], use_container_width=True, hide_index=True)
 
@@ -340,8 +369,14 @@ def main():
     st.sidebar.title("ShopFlow Analytics")
     page = st.sidebar.radio(
         "Navigation",
-        ["Executive Overview", "Customer Analytics", "Product & Supply Chain",
-         "Data Quality", "Pipeline Runs", "SQL Explorer"],
+        [
+            "Executive Overview",
+            "Customer Analytics",
+            "Product & Supply Chain",
+            "Data Quality",
+            "Pipeline Runs",
+            "SQL Explorer",
+        ],
     )
 
     pages = {

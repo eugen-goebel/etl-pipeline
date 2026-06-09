@@ -1,15 +1,16 @@
 """Six-phase ETL pipeline coordinator for the ShopFlow star schema."""
 
 import time
+
 import pandas as pd
 
-from agents.extractors import extract_all
-from agents.validators import DataValidator
-from agents.transformers import DataCleaner, DataEnricher
-from agents.dimension_builder import DimensionBuilder, FactBuilder
-from agents.loader import DatabaseLoader
-from agents.analytics_engine import AnalyticsEngine
 from agents import run_recorder
+from agents.analytics_engine import AnalyticsEngine
+from agents.dimension_builder import DimensionBuilder, FactBuilder
+from agents.extractors import extract_all
+from agents.loader import DatabaseLoader
+from agents.transformers import DataCleaner, DataEnricher
+from agents.validators import DataValidator
 from models.quality import DataQualityReport
 
 
@@ -45,8 +46,9 @@ class PipelineResult:
 class PipelineOrchestrator:
     """Coordinates the full ETL pipeline across six phases."""
 
-    def __init__(self, data_dir: str = "data", db_path: str = "output/shopflow.db",
-                 mode: str = "full"):
+    def __init__(
+        self, data_dir: str = "data", db_path: str = "output/shopflow.db", mode: str = "full"
+    ):
         self.data_dir = data_dir
         self.db_path = db_path
         self.mode = mode

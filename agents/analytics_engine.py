@@ -1,16 +1,18 @@
 """SQL analytics engine -- executes pre-built queries against the star schema."""
 
 import os
+
 import pandas as pd
-from sqlalchemy import text
+
 from db.database import get_engine
 
 
 class AnalyticsEngine:
-
     def __init__(self, db_path: str = "output/shopflow.db"):
         self.engine = get_engine(db_path)
-        self.sql_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sql", "queries")
+        self.sql_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sql", "queries"
+        )
 
     def execute_query(self, query_name: str) -> pd.DataFrame:
         """Load and execute a named SQL query from the sql/queries/ directory."""
@@ -24,7 +26,17 @@ class AnalyticsEngine:
     def execute_raw(self, sql: str) -> pd.DataFrame:
         """Execute a read-only SQL query. Rejects write operations."""
         normalized = sql.strip().upper()
-        forbidden = ("INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "CREATE", "ATTACH", "DETACH", "PRAGMA")
+        forbidden = (
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+            "DROP",
+            "ALTER",
+            "CREATE",
+            "ATTACH",
+            "DETACH",
+            "PRAGMA",
+        )
         if any(normalized.startswith(kw) for kw in forbidden):
             raise ValueError("Only SELECT queries are allowed")
         return pd.read_sql(sql, self.engine)
@@ -47,4 +59,6 @@ class AnalyticsEngine:
         """List all available SQL query names."""
         if not os.path.exists(self.sql_dir):
             return []
-        return sorted([f.replace(".sql", "") for f in os.listdir(self.sql_dir) if f.endswith(".sql")])
+        return sorted(
+            [f.replace(".sql", "") for f in os.listdir(self.sql_dir) if f.endswith(".sql")]
+        )
