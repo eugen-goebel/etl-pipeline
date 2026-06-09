@@ -10,7 +10,6 @@ import pytest
 from agents import run_recorder
 from agents.orchestrator import PipelineOrchestrator
 
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RAW_DATA_DIR = REPO_ROOT / "data" / "raw"
 
@@ -116,7 +115,12 @@ class TestOrchestratorIntegration:
         assert row["duration_seconds"] is not None
         assert row["quality_score"] is not None
         assert set(row["phase_timings"].keys()) == {
-            "extract", "validate", "transform", "build_dimensions", "load", "analyze",
+            "extract",
+            "validate",
+            "transform",
+            "build_dimensions",
+            "load",
+            "analyze",
         }
 
     def test_failed_run_records_failure(self, db_path, monkeypatch):

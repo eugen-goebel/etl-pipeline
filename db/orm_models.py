@@ -1,6 +1,18 @@
 """SQLAlchemy ORM models for the star schema."""
 
-from sqlalchemy import Column, Integer, String, Float, Boolean, Date, DateTime, ForeignKey, Index, JSON
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+)
+
 from db.database import Base
 
 

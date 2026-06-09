@@ -1,12 +1,12 @@
 """CLI entry point for the ShopFlow ETL pipeline."""
 
 import argparse
+import os
 import subprocess
 import sys
-import os
 
-from agents.orchestrator import PipelineOrchestrator
 from agents.analytics_engine import AnalyticsEngine
+from agents.orchestrator import PipelineOrchestrator
 
 
 def generate_sample_data():

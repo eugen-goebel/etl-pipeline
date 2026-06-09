@@ -1,6 +1,7 @@
 """Tests for the analytics engine."""
 
 import pytest
+
 from agents.analytics_engine import AnalyticsEngine
 
 
@@ -10,12 +11,20 @@ def analytics(loaded_db):
 
 
 @pytest.fixture
-def loaded_db(db_path, sample_customers_df, sample_suppliers_df, sample_products_df,
-              sample_orders_df, sample_returns_df, sample_shipping_df):
+def loaded_db(
+    db_path,
+    sample_customers_df,
+    sample_suppliers_df,
+    sample_products_df,
+    sample_orders_df,
+    sample_returns_df,
+    sample_shipping_df,
+):
     """Build and load a complete star schema into a temp DB."""
     from datetime import date
-    from agents.loader import DatabaseLoader
+
     from agents.dimension_builder import DimensionBuilder, FactBuilder
+    from agents.loader import DatabaseLoader
     from agents.transformers import DataCleaner, DataEnricher
 
     dim_builder = DimensionBuilder()
@@ -37,7 +46,6 @@ def loaded_db(db_path, sample_customers_df, sample_suppliers_df, sample_products
 
 
 class TestAnalyticsEngine:
-
     def test_get_kpis_keys(self, analytics):
         kpis = analytics.get_kpis()
         assert "total_revenue" in kpis

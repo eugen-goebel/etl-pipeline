@@ -1,8 +1,9 @@
 """Pydantic models for raw source data validation."""
 
-from pydantic import BaseModel, Field
-from typing import Literal
 from datetime import date
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 
 class RawOrder(BaseModel):

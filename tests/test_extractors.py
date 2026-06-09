@@ -1,11 +1,11 @@
 """Tests for data extraction agents."""
 
 import pytest
-from agents.extractors import CSVExtractor, JSONExtractor, APIExtractor, extract_all
+
+from agents.extractors import APIExtractor, CSVExtractor, JSONExtractor, extract_all
 
 
 class TestCSVExtractor:
-
     def test_extract_reads_csv(self, sample_data_dir):
         ext = CSVExtractor()
         df = ext.extract(f"{sample_data_dir}/raw/orders.csv")
@@ -18,7 +18,6 @@ class TestCSVExtractor:
 
 
 class TestJSONExtractor:
-
     def test_extract_reads_json(self, sample_data_dir):
         ext = JSONExtractor()
         df = ext.extract(f"{sample_data_dir}/raw/products.json")
@@ -31,7 +30,6 @@ class TestJSONExtractor:
 
 
 class TestAPIExtractor:
-
     def test_extract_reads_shipping(self, sample_data_dir):
         ext = APIExtractor()
         df = ext.extract(f"{sample_data_dir}/raw/shipping_events.json")
@@ -40,10 +38,16 @@ class TestAPIExtractor:
 
 
 class TestExtractAll:
-
     def test_returns_all_sources(self, sample_data_dir):
         sources = extract_all(sample_data_dir)
-        assert set(sources.keys()) == {"orders", "customers", "returns", "products", "suppliers", "shipping"}
+        assert set(sources.keys()) == {
+            "orders",
+            "customers",
+            "returns",
+            "products",
+            "suppliers",
+            "shipping",
+        }
 
     def test_row_counts(self, sample_data_dir):
         sources = extract_all(sample_data_dir)

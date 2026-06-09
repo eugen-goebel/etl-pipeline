@@ -1,8 +1,9 @@
 """Tests for dimension and fact table builders."""
 
-import pytest
-import pandas as pd
 from datetime import date
+
+import pytest
+
 from agents.dimension_builder import DimensionBuilder, FactBuilder
 from agents.transformers import DataCleaner, DataEnricher
 
@@ -22,15 +23,25 @@ def built_dimensions(dim_builder, sample_customers_df, sample_suppliers_df, samp
 
 
 class TestDimensionBuilder:
-
     def test_dim_date_covers_range(self, dim_builder):
         df = dim_builder.build_dim_date(date(2024, 1, 1), date(2024, 1, 31))
         assert len(df) == 31
 
     def test_dim_date_columns(self, dim_builder):
         df = dim_builder.build_dim_date(date(2024, 1, 1), date(2024, 1, 7))
-        expected = {"date_key", "full_date", "year", "quarter", "month", "month_name",
-                    "week", "day_of_week", "day_name", "is_weekend", "fiscal_quarter"}
+        expected = {
+            "date_key",
+            "full_date",
+            "year",
+            "quarter",
+            "month",
+            "month_name",
+            "week",
+            "day_of_week",
+            "day_name",
+            "is_weekend",
+            "fiscal_quarter",
+        }
         assert expected.issubset(set(df.columns))
 
     def test_dim_date_weekend_flag(self, dim_builder):
@@ -61,8 +72,9 @@ class TestDimensionBuilder:
 
 
 class TestFactBuilder:
-
-    def test_fact_sales_columns(self, built_dimensions, sample_orders_df, sample_returns_df, sample_shipping_df):
+    def test_fact_sales_columns(
+        self, built_dimensions, sample_orders_df, sample_returns_df, sample_shipping_df
+    ):
         dim_customer, dim_supplier, dim_product = built_dimensions
         cleaner = DataCleaner()
         enricher = DataEnricher()
@@ -71,12 +83,25 @@ class TestFactBuilder:
 
         fb = FactBuilder()
         fact = fb.build_fact_sales(orders, dim_customer, dim_product, dim_supplier)
-        required = {"order_key", "date_key", "customer_key", "product_key",
-                     "supplier_key", "quantity", "unit_price", "discount_pct",
-                     "total_amount", "shipping_cost", "profit_margin", "is_returned"}
+        required = {
+            "order_key",
+            "date_key",
+            "customer_key",
+            "product_key",
+            "supplier_key",
+            "quantity",
+            "unit_price",
+            "discount_pct",
+            "total_amount",
+            "shipping_cost",
+            "profit_margin",
+            "is_returned",
+        }
         assert required.issubset(set(fact.columns))
 
-    def test_fact_sales_date_key_format(self, built_dimensions, sample_orders_df, sample_returns_df, sample_shipping_df):
+    def test_fact_sales_date_key_format(
+        self, built_dimensions, sample_orders_df, sample_returns_df, sample_shipping_df
+    ):
         dim_customer, dim_supplier, dim_product = built_dimensions
         cleaner = DataCleaner()
         enricher = DataEnricher()
@@ -89,7 +114,9 @@ class TestFactBuilder:
         for dk in fact["date_key"]:
             assert 20240101 <= dk <= 20251231
 
-    def test_fact_sales_profit_margin(self, built_dimensions, sample_orders_df, sample_returns_df, sample_shipping_df):
+    def test_fact_sales_profit_margin(
+        self, built_dimensions, sample_orders_df, sample_returns_df, sample_shipping_df
+    ):
         dim_customer, dim_supplier, dim_product = built_dimensions
         cleaner = DataCleaner()
         enricher = DataEnricher()
