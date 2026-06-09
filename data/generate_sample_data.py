@@ -1,10 +1,11 @@
 """Sample data generator for ShopFlow e-commerce analytics."""
 
-import os
-import json
 import csv
+import json
+import os
 import random
 from datetime import date, timedelta
+
 from faker import Faker
 
 fake = Faker("de_DE")
@@ -21,17 +22,41 @@ CATEGORIES = {
     "Lebensmittel": ["Getraenke", "Snacks", "Bio", "Gewuerze", "Suessigkeiten"],
 }
 BRANDS = [
-    "TechPro", "StyleWear", "HomeComfort", "SportElite", "BioNatur",
-    "DigitalPlus", "UrbanStyle", "KuechenKraft", "FitLife", "LeseWelt",
-    "AlpinGear", "FreshFoods", "SmartHome", "ModeTrend", "GartenGlueck",
-    "PowerTech", "NordDesign", "VitalFit", "BuchPerle", "GenussArt",
+    "TechPro",
+    "StyleWear",
+    "HomeComfort",
+    "SportElite",
+    "BioNatur",
+    "DigitalPlus",
+    "UrbanStyle",
+    "KuechenKraft",
+    "FitLife",
+    "LeseWelt",
+    "AlpinGear",
+    "FreshFoods",
+    "SmartHome",
+    "ModeTrend",
+    "GartenGlueck",
+    "PowerTech",
+    "NordDesign",
+    "VitalFit",
+    "BuchPerle",
+    "GenussArt",
 ]
 PRODUCT_NAMES = {
     "Elektronik": {
-        "Smartphones": ["Premium Smartphone 128GB", "Kompakt Smartphone Pro", "Budget Smartphone Lite"],
+        "Smartphones": [
+            "Premium Smartphone 128GB",
+            "Kompakt Smartphone Pro",
+            "Budget Smartphone Lite",
+        ],
         "Laptops": ["Business Laptop 15 Zoll", "Gaming Laptop Pro", "Ultrabook Slim 14"],
         "Tablets": ["Tablet Pro 10 Zoll", "Mini Tablet 8 Zoll", "Zeichentablet XL"],
-        "Kopfhoerer": ["Premium Bluetooth Kopfhoerer", "In-Ear Sport Kopfhoerer", "Noise-Cancelling Over-Ear"],
+        "Kopfhoerer": [
+            "Premium Bluetooth Kopfhoerer",
+            "In-Ear Sport Kopfhoerer",
+            "Noise-Cancelling Over-Ear",
+        ],
         "Kameras": ["Digitalkamera 24MP", "Action Kamera 4K", "Sofortbildkamera Retro"],
     },
     "Kleidung": {
@@ -42,7 +67,11 @@ PRODUCT_NAMES = {
         "Accessoires": ["Lederguertel Classic", "Wollmuetze Winter", "Sonnenbrille UV400"],
     },
     "Haushalt": {
-        "Kuechen": ["Messerset Edelstahl 5-teilig", "Kochtoepfe Set Induktion", "Kuechenmaschine Multi"],
+        "Kuechen": [
+            "Messerset Edelstahl 5-teilig",
+            "Kochtoepfe Set Induktion",
+            "Kuechenmaschine Multi",
+        ],
         "Badezimmer": ["Handtuch Set Premium", "Seifenspender Keramik", "Badezimmerspiegel LED"],
         "Wohnzimmer": ["Dekokissen 2er Set", "Stehlampe Modern", "Wanduhr Minimalist"],
         "Garten": ["Gartenhandschuhe Set", "Blumentopf Terrakotta", "LED Solarleuchte 4er"],
@@ -67,7 +96,11 @@ PRODUCT_NAMES = {
         "Snacks": ["Nussmischung Premium", "Proteinriegel Box", "Trockenfruechtebox"],
         "Bio": ["Bio Olivenoel Extra", "Bio Vollkornmehl 1kg", "Bio Honig 500g"],
         "Gewuerze": ["Gewuerzset Asiatisch", "Pfeffermuehle mit Pfeffer", "Meersalz Flocken"],
-        "Suessigkeiten": ["Schokolade Edelbitter 85%", "Gummibaerchen Fruchtmix", "Kekse Haferflocken"],
+        "Suessigkeiten": [
+            "Schokolade Edelbitter 85%",
+            "Gummibaerchen Fruchtmix",
+            "Kekse Haferflocken",
+        ],
     },
 }
 COST_RANGES = {
@@ -172,8 +205,12 @@ def generate_orders(filepath, customers, products, count=12000):
     product_ids = list(product_map.keys())
 
     cat_weights = {
-        "Elektronik": 30, "Kleidung": 25, "Haushalt": 15,
-        "Sport": 12, "Buecher": 10, "Lebensmittel": 8,
+        "Elektronik": 30,
+        "Kleidung": 25,
+        "Haushalt": 15,
+        "Sport": 12,
+        "Buecher": 10,
+        "Lebensmittel": 8,
     }
     weights = [cat_weights.get(product_map[pid]["category"], 10) for pid in product_ids]
 
@@ -203,9 +240,7 @@ def generate_orders(filepath, customers, products, count=12000):
             "unit_price": variation,
             "discount_pct": random.choice(discount_choices),
             "order_date": order_date.isoformat(),
-            "status": random.choices(
-                ["completed", "pending", "cancelled"], weights=[85, 10, 5]
-            )[0],
+            "status": random.choices(["completed", "pending", "cancelled"], weights=[85, 10, 5])[0],
         }
         orders.append(row)
 

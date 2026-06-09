@@ -7,7 +7,6 @@ record a failure even when the database is unavailable for inserts.
 """
 
 from datetime import datetime, timezone
-from typing import Optional
 
 from sqlalchemy.orm import sessionmaker
 
@@ -47,10 +46,10 @@ def finish_run(
     run_id: int,
     *,
     status: str,
-    error_message: Optional[str] = None,
-    quality_score: Optional[float] = None,
-    phase_timings: Optional[dict] = None,
-    row_counts: Optional[dict] = None,
+    error_message: str | None = None,
+    quality_score: float | None = None,
+    phase_timings: dict | None = None,
+    row_counts: dict | None = None,
 ) -> None:
     """Update the run record with final state. Silent if the row is missing."""
     session, _ = _session(db_path)
@@ -75,12 +74,7 @@ def list_runs(db_path: str, limit: int = 50) -> list[dict]:
     """Return the most-recent runs as plain dicts for the UI."""
     session, _ = _session(db_path)
     try:
-        rows = (
-            session.query(ETLRunTable)
-            .order_by(ETLRunTable.run_id.desc())
-            .limit(limit)
-            .all()
-        )
+        rows = session.query(ETLRunTable).order_by(ETLRunTable.run_id.desc()).limit(limit).all()
         return [
             {
                 "run_id": r.run_id,

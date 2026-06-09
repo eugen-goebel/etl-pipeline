@@ -1,8 +1,9 @@
 """Database connection and session management."""
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker, DeclarativeBase
 import os
+
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 DATABASE_PATH = os.environ.get("DATABASE_PATH", "output/shopflow.db")
 DATABASE_URL = f"sqlite:///{DATABASE_PATH}"
@@ -29,6 +30,6 @@ def execute_sql(sql: str, engine=None, params: dict | None = None):
         result = conn.execute(text(sql), params or {})
         if result.returns_rows:
             columns = list(result.keys())
-            return [dict(zip(columns, row)) for row in result.fetchall()]
+            return [dict(zip(columns, row, strict=False)) for row in result.fetchall()]
         conn.commit()
         return []

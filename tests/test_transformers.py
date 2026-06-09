@@ -1,8 +1,10 @@
 """Tests for data cleaning and enrichment transformations."""
 
-import pytest
-import pandas as pd
 from datetime import date
+
+import pandas as pd
+import pytest
+
 from agents.transformers import DataCleaner, DataEnricher
 
 
@@ -17,7 +19,6 @@ def enricher():
 
 
 class TestDataCleaner:
-
     def test_clean_orders_removes_cancelled(self, cleaner, sample_orders_df):
         result = cleaner.clean_orders(sample_orders_df)
         assert "cancelled" not in result["status"].values
@@ -28,11 +29,20 @@ class TestDataCleaner:
         assert result["order_id"].is_unique
 
     def test_clean_orders_removes_zero_quantity(self, cleaner):
-        df = pd.DataFrame([
-            {"order_id": "O1", "customer_id": "C1", "product_id": "P1",
-             "quantity": 0, "unit_price": 10, "discount_pct": 0,
-             "order_date": "2024-01-01", "status": "completed"},
-        ])
+        df = pd.DataFrame(
+            [
+                {
+                    "order_id": "O1",
+                    "customer_id": "C1",
+                    "product_id": "P1",
+                    "quantity": 0,
+                    "unit_price": 10,
+                    "discount_pct": 0,
+                    "order_date": "2024-01-01",
+                    "status": "completed",
+                },
+            ]
+        )
         result = cleaner.clean_orders(df)
         assert len(result) == 0
 
@@ -59,16 +69,28 @@ class TestDataCleaner:
         assert result["shipped_date"].iloc[0] == date(2024, 3, 16)
 
     def test_column_standardization(self, cleaner):
-        df = pd.DataFrame([{"Order_ID": "O1", "Customer_ID": "C1", "Product_ID": "P1",
-                            "Quantity": 1, "Unit_Price": 10, "Discount_Pct": 0,
-                            "Order_Date": "2024-01-01", "Status": "completed"}])
+        df = pd.DataFrame(
+            [
+                {
+                    "Order_ID": "O1",
+                    "Customer_ID": "C1",
+                    "Product_ID": "P1",
+                    "Quantity": 1,
+                    "Unit_Price": 10,
+                    "Discount_Pct": 0,
+                    "Order_Date": "2024-01-01",
+                    "Status": "completed",
+                }
+            ]
+        )
         result = cleaner.clean_orders(df)
         assert all(c == c.lower() for c in result.columns)
 
 
 class TestDataEnricher:
-
-    def test_enrich_orders_total_amount(self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df):
+    def test_enrich_orders_total_amount(
+        self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df
+    ):
         cleaner = DataCleaner()
         orders = cleaner.clean_orders(sample_orders_df)
         result = enricher.enrich_orders(orders, sample_returns_df, sample_shipping_df)
@@ -76,7 +98,9 @@ class TestDataEnricher:
         row = result[result["order_id"] == "ORD-00001"].iloc[0]
         assert row["total_amount"] == 799.0
 
-    def test_enrich_orders_discount(self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df):
+    def test_enrich_orders_discount(
+        self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df
+    ):
         cleaner = DataCleaner()
         orders = cleaner.clean_orders(sample_orders_df)
         result = enricher.enrich_orders(orders, sample_returns_df, sample_shipping_df)
@@ -84,16 +108,20 @@ class TestDataEnricher:
         row = result[result["order_id"] == "ORD-00002"].iloc[0]
         assert abs(row["total_amount"] - 67.47) < 0.01
 
-    def test_enrich_orders_return_flag(self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df):
+    def test_enrich_orders_return_flag(
+        self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df
+    ):
         cleaner = DataCleaner()
         orders = cleaner.clean_orders(sample_orders_df)
         result = enricher.enrich_orders(orders, sample_returns_df, sample_shipping_df)
         returned = result[result["order_id"] == "ORD-00002"].iloc[0]
         not_returned = result[result["order_id"] == "ORD-00001"].iloc[0]
-        assert returned["is_returned"] == True
-        assert not_returned["is_returned"] == False
+        assert returned["is_returned"]
+        assert not not_returned["is_returned"]
 
-    def test_enrich_orders_shipping_cost(self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df):
+    def test_enrich_orders_shipping_cost(
+        self, enricher, sample_orders_df, sample_returns_df, sample_shipping_df
+    ):
         cleaner = DataCleaner()
         orders = cleaner.clean_orders(sample_orders_df)
         result = enricher.enrich_orders(orders, sample_returns_df, sample_shipping_df)

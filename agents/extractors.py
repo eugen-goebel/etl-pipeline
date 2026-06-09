@@ -1,7 +1,8 @@
 """Data extractors for CSV, JSON, and mock API sources."""
 
-import os
 import json
+import os
+
 import pandas as pd
 
 
@@ -60,7 +61,11 @@ def extract_all(data_dir: str) -> dict[str, ExtractionResult]:
     raw_dir = os.path.join(data_dir, "raw")
 
     # CSV sources
-    for name, filename in [("orders", "orders.csv"), ("customers", "customers.csv"), ("returns", "returns.csv")]:
+    for name, filename in [
+        ("orders", "orders.csv"),
+        ("customers", "customers.csv"),
+        ("returns", "returns.csv"),
+    ]:
         path = os.path.join(raw_dir, filename)
         df = csv_ext.extract(path)
         sources[name] = ExtractionResult(name, df, path)

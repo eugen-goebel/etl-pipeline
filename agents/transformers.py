@@ -1,7 +1,6 @@
 """Data cleaning and enrichment transformations."""
 
 import pandas as pd
-from datetime import date
 
 
 class DataCleaner:
@@ -56,7 +55,9 @@ class DataCleaner:
 class DataEnricher:
     """Adds derived columns and business calculations."""
 
-    def enrich_orders(self, orders: pd.DataFrame, returns: pd.DataFrame, shipping: pd.DataFrame) -> pd.DataFrame:
+    def enrich_orders(
+        self, orders: pd.DataFrame, returns: pd.DataFrame, shipping: pd.DataFrame
+    ) -> pd.DataFrame:
         df = orders.copy()
 
         # Total amount after discount
@@ -68,12 +69,16 @@ class DataEnricher:
         df["is_returned"] = df["order_id"].isin(returned_orders)
 
         # Shipping cost
-        shipping_costs = shipping.set_index("order_id")["shipping_cost"].to_dict() if len(shipping) > 0 else {}
+        shipping_costs = (
+            shipping.set_index("order_id")["shipping_cost"].to_dict() if len(shipping) > 0 else {}
+        )
         df["shipping_cost"] = df["order_id"].map(shipping_costs).fillna(0.0)
 
         return df
 
     def enrich_products(self, products: pd.DataFrame) -> pd.DataFrame:
         df = products.copy()
-        df["margin_pct"] = ((df["retail_price"] - df["cost_price"]) / df["retail_price"] * 100).round(1)
+        df["margin_pct"] = (
+            (df["retail_price"] - df["cost_price"]) / df["retail_price"] * 100
+        ).round(1)
         return df

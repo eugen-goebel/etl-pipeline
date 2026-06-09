@@ -1,19 +1,26 @@
 """Tests for incremental load functionality."""
 
-import pytest
-import pandas as pd
 from datetime import date
+
+import pandas as pd
+import pytest
 from sqlalchemy import text
 
-from agents.loader import DatabaseLoader
 from agents.dimension_builder import DimensionBuilder, FactBuilder
+from agents.loader import DatabaseLoader
 from agents.transformers import DataCleaner, DataEnricher
 from db.database import get_engine
 
 
 @pytest.fixture
-def star_schema(sample_customers_df, sample_suppliers_df, sample_products_df,
-                sample_orders_df, sample_returns_df, sample_shipping_df):
+def star_schema(
+    sample_customers_df,
+    sample_suppliers_df,
+    sample_products_df,
+    sample_orders_df,
+    sample_returns_df,
+    sample_shipping_df,
+):
     """Build a complete star schema from sample data."""
     dim_builder = DimensionBuilder()
     cleaner = DataCleaner()
@@ -38,7 +45,6 @@ def star_schema(sample_customers_df, sample_suppliers_df, sample_products_df,
 
 
 class TestIncrementalLoad:
-
     def test_first_incremental_falls_back_to_full(self, db_path, star_schema):
         """When no prior load exists, incremental should do a full load."""
         loader = DatabaseLoader(db_path)
