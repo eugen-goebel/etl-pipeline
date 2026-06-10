@@ -7,7 +7,7 @@ Multi-agent ETL pipeline that transforms raw e-commerce data into a star schema 
 ![License](https://img.shields.io/badge/License-MIT-green)
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Streamlit_Cloud-FF4B4B?style=flat)](https://eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app/)
 
-> **Try it live:** [eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app](https://eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app/). Fully hosted, no setup. The demo database is auto-generated on first visit (~30s); after that you can explore the dashboard, KPIs, and SQL Explorer interactively.
+> **Try it live:** [eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app](https://eugen-goebel-etl-pipeline-app-4shwqu.streamlit.app/). Fully hosted, no setup. The demo database is auto-generated on first visit (~30s). After that you can explore the dashboard, KPIs, and SQL Explorer interactively.
 
 ## Screenshots
 
