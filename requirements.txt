@@ -6,6 +6,6 @@ sqlalchemy>=2.0.51
 pydantic>=2.13.4
 matplotlib>=3.11.0
 seaborn>=0.13.2
-faker>=40.27.0
+faker>=40.28.1
 pytest>=9.1.1
 python-dotenv>=1.2.2
