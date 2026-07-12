@@ -100,10 +100,10 @@ def page_overview():
 
     kpis = load_kpis()
     c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Total Revenue", f"{kpis['total_revenue']:,.2f}")
-    c2.metric("Total Orders", f"{kpis['total_orders']:,}")
+    c1.metric("Total Revenue", f"{kpis['total_revenue'] / 1e6:.2f}M")
+    c2.metric("Total Orders", f"{int(kpis['total_orders']):,}")
     c3.metric("Avg Order Value", f"{kpis['avg_order_value']:,.2f}")
-    c4.metric("Unique Customers", f"{kpis['unique_customers']:,}")
+    c4.metric("Unique Customers", f"{int(kpis['unique_customers']):,}")
     c5.metric("Return Rate", f"{kpis['return_rate']:.1f}%")
 
     st.subheader("Monthly Revenue Trend")
