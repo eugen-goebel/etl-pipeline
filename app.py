@@ -3,6 +3,7 @@
 import os
 import subprocess
 import sys
+import uuid
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -26,6 +27,9 @@ def build_demo_db():
 
     Used by hosted deploys (e.g. Streamlit Cloud) where the database is not
     pre-built. Locally, prefer `python main.py --generate`.
+
+    The pipeline writes to a unique temporary file that is then atomically
+    moved into place, so the live database file is never left half-built.
     """
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     generator = os.path.join(repo_dir, "data", "generate_sample_data.py")
@@ -35,31 +39,42 @@ def build_demo_db():
     from agents.orchestrator import PipelineOrchestrator
 
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-    orchestrator = PipelineOrchestrator(
+    tmp_path = f"{DB_PATH}.{uuid.uuid4().hex}.tmp"
+    PipelineOrchestrator(
         data_dir=os.path.join(repo_dir, "data"),
-        db_path=DB_PATH,
+        db_path=tmp_path,
         mode="full",
+    ).run()
+    os.replace(tmp_path, DB_PATH)
+
+
+@st.cache_resource(
+    show_spinner=(
+        "First-time setup: generating sample data and running the ETL "
+        "pipeline. This takes ~30 seconds and only happens once per deploy."
     )
-    orchestrator.run()
+)
+def ensure_demo_db():
+    """Build the demo database exactly once per process.
+
+    st.cache_resource runs this a single time and makes concurrent sessions
+    wait for the first build to finish, which prevents two builds from racing
+    on the same SQLite file (the cause of duplicate-key errors on cold start).
+    """
+    if not os.path.exists(DB_PATH):
+        build_demo_db()
+    return DB_PATH
 
 
 def check_db():
-    if os.path.exists(DB_PATH):
-        return
+    try:
+        ensure_demo_db()
+    except Exception as exc:
+        import traceback
 
-    with st.spinner(
-        "First-time setup: generating sample data and running the ETL "
-        "pipeline. This takes ~30 seconds and only happens once per deploy."
-    ):
-        try:
-            build_demo_db()
-        except Exception as exc:
-            import traceback
-
-            st.error(f"Failed to build demo database: {exc}")
-            st.code(traceback.format_exc(), language="text")
-            st.stop()
-    st.rerun()
+        st.error(f"Failed to build demo database: {exc}")
+        st.code(traceback.format_exc(), language="text")
+        st.stop()
 
 
 @st.cache_data(ttl=300)
