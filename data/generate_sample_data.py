@@ -8,108 +8,116 @@ from datetime import date, timedelta
 
 from faker import Faker
 
-fake = Faker("de_DE")
+fake = Faker("en_US")
 Faker.seed(42)
 random.seed(42)
 
-REGIONS = ["Nord", "Sued", "Ost", "West", "Mitte"]
+REGIONS = ["North", "South", "East", "West", "Central"]
 CATEGORIES = {
-    "Elektronik": ["Smartphones", "Laptops", "Tablets", "Kopfhoerer", "Kameras"],
-    "Kleidung": ["T-Shirts", "Hosen", "Jacken", "Schuhe", "Accessoires"],
-    "Haushalt": ["Kuechen", "Badezimmer", "Wohnzimmer", "Garten", "Reinigung"],
-    "Sport": ["Fitness", "Outdoor", "Teamsport", "Wassersport", "Wintersport"],
-    "Buecher": ["Sachbuch", "Roman", "Fachbuch", "Kinderbuch", "Ratgeber"],
-    "Lebensmittel": ["Getraenke", "Snacks", "Bio", "Gewuerze", "Suessigkeiten"],
+    "Electronics": ["Smartphones", "Laptops", "Tablets", "Headphones", "Cameras"],
+    "Clothing": ["T-Shirts", "Pants", "Jackets", "Shoes", "Accessories"],
+    "Home": ["Kitchen", "Bathroom", "Living Room", "Garden", "Cleaning"],
+    "Sports": ["Fitness", "Outdoor", "Team Sports", "Water Sports", "Winter Sports"],
+    "Books": ["Non-Fiction", "Novel", "Textbook", "Children", "Guides"],
+    "Groceries": ["Beverages", "Snacks", "Organic", "Spices", "Sweets"],
 }
 BRANDS = [
     "TechPro",
     "StyleWear",
     "HomeComfort",
     "SportElite",
-    "BioNatur",
+    "BioNature",
     "DigitalPlus",
     "UrbanStyle",
-    "KuechenKraft",
+    "KitchenCraft",
     "FitLife",
-    "LeseWelt",
-    "AlpinGear",
+    "ReadWell",
+    "AlpineGear",
     "FreshFoods",
     "SmartHome",
-    "ModeTrend",
-    "GartenGlueck",
+    "TrendMode",
+    "GardenJoy",
     "PowerTech",
-    "NordDesign",
+    "NordicDesign",
     "VitalFit",
-    "BuchPerle",
-    "GenussArt",
+    "BookPearl",
+    "GourmetArt",
 ]
 PRODUCT_NAMES = {
-    "Elektronik": {
+    "Electronics": {
         "Smartphones": [
             "Premium Smartphone 128GB",
-            "Kompakt Smartphone Pro",
+            "Compact Smartphone Pro",
             "Budget Smartphone Lite",
         ],
-        "Laptops": ["Business Laptop 15 Zoll", "Gaming Laptop Pro", "Ultrabook Slim 14"],
-        "Tablets": ["Tablet Pro 10 Zoll", "Mini Tablet 8 Zoll", "Zeichentablet XL"],
-        "Kopfhoerer": [
-            "Premium Bluetooth Kopfhoerer",
-            "In-Ear Sport Kopfhoerer",
+        "Laptops": ["Business Laptop 15 inch", "Gaming Laptop Pro", "Ultrabook Slim 14"],
+        "Tablets": ["Tablet Pro 10 inch", "Mini Tablet 8 inch", "Drawing Tablet XL"],
+        "Headphones": [
+            "Premium Bluetooth Headphones",
+            "In-Ear Sport Headphones",
             "Noise-Cancelling Over-Ear",
         ],
-        "Kameras": ["Digitalkamera 24MP", "Action Kamera 4K", "Sofortbildkamera Retro"],
+        "Cameras": ["Digital Camera 24MP", "Action Camera 4K", "Instant Camera Retro"],
     },
-    "Kleidung": {
-        "T-Shirts": ["Basic T-Shirt Baumwolle", "Premium V-Neck Shirt", "Sport Funktionsshirt"],
-        "Hosen": ["Slim Fit Jeans", "Chino Hose Classic", "Jogginghose Komfort"],
-        "Jacken": ["Winterjacke Thermo", "Leichte Uebergangsjacke", "Regenjacke Outdoor"],
-        "Schuhe": ["Laufschuhe Pro", "Business Lederschuhe", "Sneaker Urban Style"],
-        "Accessoires": ["Lederguertel Classic", "Wollmuetze Winter", "Sonnenbrille UV400"],
+    "Clothing": {
+        "T-Shirts": ["Basic Cotton T-Shirt", "Premium V-Neck Shirt", "Sport Performance Shirt"],
+        "Pants": ["Slim Fit Jeans", "Chino Pants Classic", "Jogger Pants Comfort"],
+        "Jackets": ["Winter Jacket Thermo", "Light Transition Jacket", "Rain Jacket Outdoor"],
+        "Shoes": ["Running Shoes Pro", "Business Leather Shoes", "Sneaker Urban Style"],
+        "Accessories": ["Leather Belt Classic", "Wool Beanie Winter", "Sunglasses UV400"],
     },
-    "Haushalt": {
-        "Kuechen": [
-            "Messerset Edelstahl 5-teilig",
-            "Kochtoepfe Set Induktion",
-            "Kuechenmaschine Multi",
+    "Home": {
+        "Kitchen": [
+            "Knife Set Stainless 5-piece",
+            "Cookware Set Induction",
+            "Food Processor Multi",
         ],
-        "Badezimmer": ["Handtuch Set Premium", "Seifenspender Keramik", "Badezimmerspiegel LED"],
-        "Wohnzimmer": ["Dekokissen 2er Set", "Stehlampe Modern", "Wanduhr Minimalist"],
-        "Garten": ["Gartenhandschuhe Set", "Blumentopf Terrakotta", "LED Solarleuchte 4er"],
-        "Reinigung": ["Staubsauger Beutellos", "Dampfreiniger Kompakt", "Mikrofasertuch 10er Pack"],
+        "Bathroom": ["Towel Set Premium", "Soap Dispenser Ceramic", "Bathroom Mirror LED"],
+        "Living Room": ["Throw Pillow 2-pack", "Floor Lamp Modern", "Wall Clock Minimalist"],
+        "Garden": ["Garden Gloves Set", "Flower Pot Terracotta", "LED Solar Light 4-pack"],
+        "Cleaning": ["Vacuum Cleaner Bagless", "Steam Cleaner Compact", "Microfiber Cloth 10-pack"],
     },
-    "Sport": {
-        "Fitness": ["Kurzhantel Set 20kg", "Yogamatte Premium", "Widerstandsbaender Set"],
-        "Outdoor": ["Wanderrucksack 40L", "Trekkingstock Carbon", "Campingzelt 2 Personen"],
-        "Teamsport": ["Fussball Trainingsball", "Basketball Indoor", "Volleyball Wettkampf"],
-        "Wassersport": ["Schwimmbrille Profi", "Neoprenanzug 3mm", "SUP Board Aufblasbar"],
-        "Wintersport": ["Skihandschuhe Thermo", "Snowboardhelm Safety", "Thermounterwaesche Set"],
+    "Sports": {
+        "Fitness": ["Dumbbell Set 20kg", "Yoga Mat Premium", "Resistance Bands Set"],
+        "Outdoor": ["Hiking Backpack 40L", "Trekking Pole Carbon", "Camping Tent 2 Person"],
+        "Team Sports": ["Soccer Training Ball", "Basketball Indoor", "Volleyball Competition"],
+        "Water Sports": ["Swim Goggles Pro", "Wetsuit 3mm", "SUP Board Inflatable"],
+        "Winter Sports": ["Ski Gloves Thermo", "Snowboard Helmet Safety", "Thermal Underwear Set"],
     },
-    "Buecher": {
-        "Sachbuch": ["Geschichte Europas", "Psychologie Grundlagen", "Wirtschaft Verstehen"],
-        "Roman": ["Der Letzte Sommer", "Stille Wasser", "Nachtlichter"],
-        "Fachbuch": ["Python Programmierung", "Data Science Handbuch", "Maschinenbau Basics"],
-        "Kinderbuch": ["Abenteuer im Wald", "Kleine Entdecker", "Gute Nacht Geschichten"],
-        "Ratgeber": ["Gesund Kochen", "Achtsamkeit Praxis", "Finanzen Meistern"],
+    "Books": {
+        "Non-Fiction": ["History of Europe", "Psychology Basics", "Understanding Economics"],
+        "Novel": ["The Last Summer", "Still Waters", "Night Lights"],
+        "Textbook": [
+            "Python Programming",
+            "Data Science Handbook",
+            "Mechanical Engineering Basics",
+        ],
+        "Children": ["Adventure in the Forest", "Little Explorers", "Bedtime Stories"],
+        "Guides": ["Healthy Cooking", "Mindfulness Practice", "Mastering Finances"],
     },
-    "Lebensmittel": {
-        "Getraenke": ["Bio Hafermilch 1L", "Smoothie Mix 500ml", "Kraeutertee Mischung"],
-        "Snacks": ["Nussmischung Premium", "Proteinriegel Box", "Trockenfruechtebox"],
-        "Bio": ["Bio Olivenoel Extra", "Bio Vollkornmehl 1kg", "Bio Honig 500g"],
-        "Gewuerze": ["Gewuerzset Asiatisch", "Pfeffermuehle mit Pfeffer", "Meersalz Flocken"],
-        "Suessigkeiten": [
-            "Schokolade Edelbitter 85%",
-            "Gummibaerchen Fruchtmix",
-            "Kekse Haferflocken",
+    "Groceries": {
+        "Beverages": ["Organic Oat Milk 1L", "Smoothie Mix 500ml", "Herbal Tea Blend"],
+        "Snacks": ["Nut Mix Premium", "Protein Bar Box", "Dried Fruit Box"],
+        "Organic": [
+            "Organic Olive Oil Extra",
+            "Organic Whole Wheat Flour 1kg",
+            "Organic Honey 500g",
+        ],
+        "Spices": ["Spice Set Asian", "Pepper Mill with Pepper", "Sea Salt Flakes"],
+        "Sweets": [
+            "Dark Chocolate 85%",
+            "Fruit Gummy Bears",
+            "Oatmeal Cookies",
         ],
     },
 }
 COST_RANGES = {
-    "Elektronik": (20, 500),
-    "Kleidung": (8, 80),
-    "Haushalt": (5, 120),
-    "Sport": (10, 150),
-    "Buecher": (5, 40),
-    "Lebensmittel": (1, 15),
+    "Electronics": (20, 500),
+    "Clothing": (8, 80),
+    "Home": (5, 120),
+    "Sports": (10, 150),
+    "Books": (5, 40),
+    "Groceries": (1, 15),
 }
 
 
@@ -205,12 +213,12 @@ def generate_orders(filepath, customers, products, count=12000):
     product_ids = list(product_map.keys())
 
     cat_weights = {
-        "Elektronik": 30,
-        "Kleidung": 25,
-        "Haushalt": 15,
-        "Sport": 12,
-        "Buecher": 10,
-        "Lebensmittel": 8,
+        "Electronics": 30,
+        "Clothing": 25,
+        "Home": 15,
+        "Sports": 12,
+        "Books": 10,
+        "Groceries": 8,
     }
     weights = [cat_weights.get(product_map[pid]["category"], 10) for pid in product_ids]
 

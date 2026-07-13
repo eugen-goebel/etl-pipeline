@@ -72,7 +72,7 @@ def sample_products_df():
             {
                 "product_id": "P001",
                 "name": "Laptop Pro",
-                "category": "Elektronik",
+                "category": "Electronics",
                 "subcategory": "Laptops",
                 "brand": "TechPro",
                 "supplier_id": "SUP-01",
@@ -82,7 +82,7 @@ def sample_products_df():
             {
                 "product_id": "P002",
                 "name": "T-Shirt Basic",
-                "category": "Kleidung",
+                "category": "Clothing",
                 "subcategory": "T-Shirts",
                 "brand": "StyleWear",
                 "supplier_id": "SUP-01",
@@ -92,7 +92,7 @@ def sample_products_df():
             {
                 "product_id": "P003",
                 "name": "Yoga Matte",
-                "category": "Sport",
+                "category": "Sports",
                 "subcategory": "Fitness",
                 "brand": "FitLife",
                 "supplier_id": "SUP-02",
@@ -328,7 +328,7 @@ def sample_data_dir(tmp_path):
         {
             "product_id": "P001",
             "name": "Laptop Pro",
-            "category": "Elektronik",
+            "category": "Electronics",
             "subcategory": "Laptops",
             "brand": "TechPro",
             "supplier_id": "SUP-01",
@@ -338,7 +338,7 @@ def sample_data_dir(tmp_path):
         {
             "product_id": "P002",
             "name": "T-Shirt Basic",
-            "category": "Kleidung",
+            "category": "Clothing",
             "subcategory": "T-Shirts",
             "brand": "StyleWear",
             "supplier_id": "SUP-01",
@@ -348,7 +348,7 @@ def sample_data_dir(tmp_path):
         {
             "product_id": "P003",
             "name": "Yoga Matte",
-            "category": "Sport",
+            "category": "Sports",
             "subcategory": "Fitness",
             "brand": "FitLife",
             "supplier_id": "SUP-02",
