@@ -16,6 +16,10 @@ from agents.analytics_engine import AnalyticsEngine
 from db.database import execute_sql, get_engine
 
 DB_PATH = "output/shopflow.db"
+# Bump when the sample data content changes, so a hosted deploy that still
+# has an old database on disk rebuilds it instead of serving stale data.
+DATA_VERSION = "2"
+VERSION_PATH = DB_PATH + ".version"
 COLORS = ["#1f77b4", "#2ca02c", "#17becf", "#ff7f0e", "#9467bd", "#d62728"]
 
 sns.set_style("whitegrid")
@@ -46,6 +50,16 @@ def build_demo_db():
         mode="full",
     ).run()
     os.replace(tmp_path, DB_PATH)
+    with open(VERSION_PATH, "w") as f:
+        f.write(DATA_VERSION)
+
+
+def _demo_db_is_current():
+    """True only if a database built for the current DATA_VERSION exists."""
+    if not os.path.exists(DB_PATH) or not os.path.exists(VERSION_PATH):
+        return False
+    with open(VERSION_PATH) as f:
+        return f.read().strip() == DATA_VERSION
 
 
 @st.cache_resource(
@@ -60,8 +74,9 @@ def ensure_demo_db():
     st.cache_resource runs this a single time and makes concurrent sessions
     wait for the first build to finish, which prevents two builds from racing
     on the same SQLite file (the cause of duplicate-key errors on cold start).
+    Rebuilds when the on-disk database predates the current DATA_VERSION.
     """
-    if not os.path.exists(DB_PATH):
+    if not _demo_db_is_current():
         build_demo_db()
     return DB_PATH
 
