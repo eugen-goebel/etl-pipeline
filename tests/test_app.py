@@ -54,6 +54,52 @@ class TestDataVersionGuard:
         assert app._demo_db_is_current()
 
 
+class TestNoFigureLeak:
+    def test_rendered_figures_are_closed(self):
+        """The dashboard must not leak matplotlib figures across reruns."""
+        import matplotlib.pyplot as plt
+
+        plt.close("all")
+        at = AppTest.from_file(APP_PATH, default_timeout=180)
+        at.run()
+
+        assert not at.exception
+        # Executive Overview renders two charts; both must be closed again.
+        assert plt.get_fignums() == []
+
+
+class TestReadonlySqlGuard:
+    @pytest.mark.parametrize(
+        "sql",
+        [
+            "SELECT * FROM fact_sales LIMIT 5",
+            "  select count(*) from dim_product  ",
+            "WITH t AS (SELECT 1 AS n) SELECT n FROM t",
+            "SELECT * FROM fact_sales;",  # single trailing semicolon is fine
+            "",  # empty is not an error
+        ],
+    )
+    def test_allows_read_only_selects(self, sql):
+        import app
+
+        assert app.validate_readonly_sql(sql) is None
+
+    @pytest.mark.parametrize(
+        "sql",
+        [
+            "DROP TABLE dim_product",
+            "delete from fact_sales",
+            "SELECT 1; DROP TABLE dim_product",  # sneaky second statement
+            "UPDATE dim_product SET name = 'x'",
+            "PRAGMA table_info(fact_sales)",
+        ],
+    )
+    def test_blocks_writes_and_multi_statements(self, sql):
+        import app
+
+        assert app.validate_readonly_sql(sql) is not None
+
+
 class TestAppSmoke:
     def test_boots_and_renders_executive_overview(self):
         """The dashboard starts in demo mode and renders without errors."""

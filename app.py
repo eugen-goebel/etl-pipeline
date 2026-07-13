@@ -1,6 +1,7 @@
 """Streamlit dashboard for ShopFlow analytics."""
 
 import os
+import re
 import subprocess
 import sys
 import uuid
@@ -110,6 +111,55 @@ def run_raw_sql(sql: str) -> pd.DataFrame:
     return engine.execute_raw(sql)
 
 
+def show_fig(fig):
+    """Render a matplotlib figure and close it.
+
+    Streamlit reruns the whole script on every interaction, so figures that
+    are not closed accumulate in matplotlib's global registry and leak
+    memory (the "More than 20 figures have been opened" warning).
+    """
+    st.pyplot(fig)
+    plt.close(fig)
+
+
+FORBIDDEN_SQL_KEYWORDS = frozenset(
+    {
+        "INSERT",
+        "UPDATE",
+        "DELETE",
+        "DROP",
+        "ALTER",
+        "CREATE",
+        "REPLACE",
+        "ATTACH",
+        "DETACH",
+        "PRAGMA",
+        "VACUUM",
+    }
+)
+
+
+def validate_readonly_sql(sql: str) -> str | None:
+    """Return an error message if the SQL is not a single read-only SELECT.
+
+    Uses an allowlist (must start with SELECT/WITH), rejects multiple
+    statements, and blocks writing keywords anywhere as defense in depth,
+    so leading whitespace or a trailing statement cannot slip a write past.
+    """
+    stripped = sql.strip().rstrip(";").strip()
+    if not stripped:
+        return None
+    if ";" in stripped:
+        return "Please run a single SELECT statement."
+    upper = stripped.upper()
+    if not (upper.startswith("SELECT") or upper.startswith("WITH")):
+        return "Only SELECT queries are allowed."
+    tokens = set(re.findall(r"[A-Za-z_]+", upper))
+    if FORBIDDEN_SQL_KEYWORDS & tokens:
+        return "Only read-only SELECT queries are allowed."
+    return None
+
+
 def page_overview():
     st.header("Executive Overview")
 
@@ -132,7 +182,7 @@ def page_overview():
     ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     ax.set_ylabel("Revenue")
     plt.tight_layout()
-    st.pyplot(fig)
+    show_fig(fig)
 
     st.subheader("Revenue by Category")
     cat_df = run_raw_sql("""
@@ -146,7 +196,7 @@ def page_overview():
     ax2.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
     ax2.set_xlabel("Revenue")
     plt.tight_layout()
-    st.pyplot(fig2)
+    show_fig(fig2)
 
 
 def page_customers():
@@ -166,7 +216,7 @@ def page_customers():
             colors=COLORS[: len(seg_counts)],
         )
         plt.tight_layout()
-        st.pyplot(fig)
+        show_fig(fig)
 
     with col2:
         st.subheader("Cohort Retention")
@@ -186,7 +236,7 @@ def page_customers():
             sns.heatmap(pivot, annot=True, fmt=".0f", cmap="Blues", ax=ax2)
             ax2.set_title("Active Customers by Cohort")
             plt.tight_layout()
-            st.pyplot(fig2)
+            show_fig(fig2)
         else:
             st.info("Cohort data not available.")
 
@@ -201,7 +251,7 @@ def page_customers():
         ax3.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
         ax3.set_ylabel("Lifetime Value")
         plt.tight_layout()
-        st.pyplot(fig3)
+        show_fig(fig3)
 
 
 def page_products():
@@ -223,7 +273,7 @@ def page_products():
             ax.set_ylabel("Number of Products")
             ax.set_xlabel("ABC Class")
             plt.tight_layout()
-            st.pyplot(fig)
+            show_fig(fig)
 
     with col2:
         st.subheader("Return Rate by Category")
@@ -233,7 +283,7 @@ def page_products():
             ax2.barh(ret["category"], ret["return_rate_pct"], color=COLORS[3])
             ax2.set_xlabel("Return Rate (%)")
             plt.tight_layout()
-            st.pyplot(fig2)
+            show_fig(fig2)
 
     st.subheader("Supplier Scorecard")
     supp = load_query("supplier_scorecard")
@@ -272,7 +322,7 @@ def page_quality():
         ax.bar(src_df["source"], src_df["issues"], color=COLORS[0])
         ax.set_ylabel("Issues")
         plt.tight_layout()
-        st.pyplot(fig)
+        show_fig(fig)
 
     st.subheader("Recent Issues")
     issues = execute_sql(
@@ -308,23 +358,12 @@ def page_sql_explorer():
         "Enter SQL query (read-only)", height=150, placeholder="SELECT * FROM fact_sales LIMIT 10"
     )
     if st.button("Run Custom SQL"):
-        sql_stripped = custom_sql.strip().upper()
-        forbidden = (
-            "INSERT",
-            "UPDATE",
-            "DELETE",
-            "DROP",
-            "ALTER",
-            "CREATE",
-            "ATTACH",
-            "DETACH",
-            "PRAGMA",
-        )
-        if any(sql_stripped.startswith(kw) for kw in forbidden):
-            st.error("Only SELECT queries are allowed.")
+        error = validate_readonly_sql(custom_sql)
+        if error:
+            st.error(error)
         elif custom_sql.strip():
             try:
-                df = engine.execute_raw(custom_sql)
+                df = engine.execute_raw(custom_sql.strip().rstrip(";").strip())
                 st.dataframe(df, use_container_width=True)
             except (ValueError, TypeError) as exc:
                 st.error(f"Invalid query: {exc}")
@@ -359,7 +398,7 @@ def page_pipeline_runs():
     cols[0].metric("Total runs", total_runs)
     cols[1].metric("Success rate", f"{success_rate:.0f}%")
     cols[2].metric("Failures", failed_runs)
-    cols[3].metric("Avg duration", f"{avg_duration:.2f}s" if avg_duration else "—")
+    cols[3].metric("Avg duration", f"{avg_duration:.2f}s" if avg_duration else "-")
 
     # Trend
     if df["duration_seconds"].notna().sum() >= 2:
