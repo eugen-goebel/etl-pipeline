@@ -378,6 +378,18 @@ def page_pipeline_runs():
         st.caption("No per-phase timings recorded for the latest run.")
 
 
+def render_footer():
+    st.divider()
+    st.markdown(
+        "<div style='text-align:center; color:gray; font-size:0.85rem;'>"
+        "Built by Eugen Goebel &middot; "
+        "<a href='https://github.com/eugen-goebel' target='_blank'>GitHub</a> &middot; "
+        "<a href='https://www.linkedin.com/in/eugen-goebel/' target='_blank'>LinkedIn</a>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def main():
     check_db()
 
@@ -403,6 +415,7 @@ def main():
         "SQL Explorer": page_sql_explorer,
     }
     pages[page]()
+    render_footer()
 
 
 if __name__ == "__main__":

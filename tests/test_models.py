@@ -66,7 +66,7 @@ class TestSourceModels:
         product = RawProduct(
             product_id="P1",
             name="Laptop",
-            category="Elektronik",
+            category="Electronics",
             subcategory="Laptops",
             brand="TechPro",
             supplier_id="S1",
