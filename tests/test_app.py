@@ -27,6 +27,33 @@ def _generate_raw_data():
     subprocess.run([sys.executable, generator], check=True, cwd=REPO_DIR)
 
 
+class TestDataVersionGuard:
+    """The demo DB must rebuild when it predates the current DATA_VERSION."""
+
+    def test_is_current_only_when_version_matches(self, tmp_path, monkeypatch):
+        import app
+
+        db = tmp_path / "shopflow.db"
+        version = tmp_path / "shopflow.db.version"
+        monkeypatch.setattr(app, "DB_PATH", str(db))
+        monkeypatch.setattr(app, "VERSION_PATH", str(version))
+
+        # No database yet
+        assert not app._demo_db_is_current()
+
+        # Database exists but no version marker (old build)
+        db.write_text("")
+        assert not app._demo_db_is_current()
+
+        # Version marker from an older data version
+        version.write_text("1")
+        assert not app._demo_db_is_current()
+
+        # Version marker matches the current data version
+        version.write_text(app.DATA_VERSION)
+        assert app._demo_db_is_current()
+
+
 class TestAppSmoke:
     def test_boots_and_renders_executive_overview(self):
         """The dashboard starts in demo mode and renders without errors."""
