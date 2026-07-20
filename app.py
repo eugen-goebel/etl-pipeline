@@ -24,7 +24,9 @@ VERSION_PATH = DB_PATH + ".version"
 COLORS = ["#1f77b4", "#2ca02c", "#17becf", "#ff7f0e", "#9467bd", "#d62728"]
 
 sns.set_style("whitegrid")
-st.set_page_config(page_title="ShopFlow Analytics", layout="wide")
+# Keep the sidebar open on load: the six-page navigation lives there, and a
+# collapsed sidebar hides everything past the Executive Overview.
+st.set_page_config(page_title="ShopFlow Analytics", layout="wide", initial_sidebar_state="expanded")
 
 
 def build_demo_db():
