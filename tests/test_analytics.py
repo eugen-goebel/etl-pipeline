@@ -1,8 +1,11 @@
 """Tests for the analytics engine."""
 
+import sqlite3
 import time
 
 import pytest
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from agents import analytics_engine
 from agents.analytics_engine import AnalyticsEngine
@@ -90,7 +93,31 @@ class TestExecuteRawGuards:
 
     @pytest.fixture
     def engine(self, tmp_path):
-        return AnalyticsEngine(str(tmp_path / "guard.db"))
+        # The file has to exist: execute_raw opens it read-only, and SQLite
+        # will not create a database in that mode.
+        db_path = tmp_path / "guard.db"
+        con = sqlite3.connect(db_path)
+        con.execute("CREATE TABLE dim_product (product_key INTEGER)")
+        con.commit()
+        con.close()
+        return AnalyticsEngine(str(db_path))
+
+    def test_the_connection_itself_refuses_writes(self, engine):
+        # Defense in depth: the keyword filter is text matching and text
+        # matching gets bypassed, so the connection used for visitor SQL is
+        # opened read-only and SQLite refuses a write on its own.
+        with pytest.raises(SQLAlchemyError, match="readonly database"):
+            with engine.readonly_engine().connect() as conn:
+                conn.execute(text("INSERT INTO dim_product VALUES (1)"))
+                conn.commit()
+
+    def test_the_pipeline_can_still_write(self, engine):
+        # The read-only connection must not affect the loader, which has to
+        # write the star schema.
+        with engine.engine.connect() as conn:
+            conn.execute(text("INSERT INTO dim_product VALUES (1)"))
+            conn.commit()
+        assert engine.execute_raw("SELECT COUNT(*) AS n FROM dim_product").iloc[0]["n"] == 1
 
     def test_plain_select_still_works(self, engine):
         assert engine.execute_raw("SELECT 1 AS x").iloc[0]["x"] == 1

@@ -6,6 +6,7 @@ import time
 
 import pandas as pd
 from pandas.errors import DatabaseError
+from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 
 from db.database import get_engine
@@ -16,10 +17,27 @@ QUERY_TIMEOUT_SECONDS = 5.0
 
 class AnalyticsEngine:
     def __init__(self, db_path: str = "output/shopflow.db"):
+        self.db_path = db_path
         self.engine = get_engine(db_path)
+        self._readonly_engine = None
         self.sql_dir = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sql", "queries"
         )
+
+    def readonly_engine(self):
+        """An engine that cannot write, whatever the SQL turns out to say.
+
+        The keyword check in execute_raw is a filter over text, and filters get
+        bypassed: a pragma table-valued function and a recursive CTE both slipped
+        past earlier versions of it. Opening SQLite in read-only mode moves the
+        guarantee from "we hope the filter caught it" to something the database
+        enforces, so a statement that does get through still cannot change data.
+        """
+        if self._readonly_engine is None:
+            self._readonly_engine = create_engine(
+                f"sqlite:///file:{self.db_path}?mode=ro&uri=true", echo=False
+            )
+        return self._readonly_engine
 
     def execute_query(self, query_name: str) -> pd.DataFrame:
         """Load and execute a named SQL query from the sql/queries/ directory."""
@@ -58,7 +76,7 @@ class AnalyticsEngine:
         if tokens & set(forbidden) or any(t.startswith("PRAGMA_") for t in tokens):
             raise ValueError("Only SELECT queries are allowed")
 
-        with self.engine.connect() as conn:
+        with self.readonly_engine().connect() as conn:
             self._apply_timeout(conn, QUERY_TIMEOUT_SECONDS)
             try:
                 return pd.read_sql(sql, conn)
