@@ -99,6 +99,24 @@ class TestReadonlySqlGuard:
 
         assert app.validate_readonly_sql(sql) is not None
 
+    @pytest.mark.parametrize(
+        "sql",
+        [
+            # SQLite exposes pragmas as table-valued functions too, and those
+            # tokenize as a single word, so the plain PRAGMA entry misses them.
+            # pragma_database_list() leaks the database file path.
+            "SELECT * FROM pragma_database_list()",
+            "select * from pragma_table_info('fact_sales')",
+            # A recursive CTE passes the SELECT allowlist but can generate rows
+            # without end and tie up the shared deployment.
+            "WITH RECURSIVE c(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM c) SELECT count(*) FROM c",
+        ],
+    )
+    def test_blocks_pragma_functions_and_recursive_ctes(self, sql):
+        import app
+
+        assert app.validate_readonly_sql(sql) is not None
+
 
 class TestAppSmoke:
     def test_boots_and_renders_executive_overview(self):
