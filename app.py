@@ -159,6 +159,17 @@ def validate_readonly_sql(sql: str) -> str | None:
     tokens = set(re.findall(r"[A-Za-z_]+", upper))
     if FORBIDDEN_SQL_KEYWORDS & tokens:
         return "Only read-only SELECT queries are allowed."
+    # SQLite also exposes pragmas as table-valued functions, and their names
+    # tokenize as one word (pragma_database_list), so the plain PRAGMA entry
+    # above never matches them. They would leak the database file path.
+    if any(token.startswith("PRAGMA_") for token in tokens):
+        return "Only read-only SELECT queries are allowed."
+    # A recursive CTE is a legitimate SELECT, so the allowlist lets it through,
+    # but it can generate rows without end and hang the shared app. The query
+    # timeout in execute_raw is the real guard; refusing it here keeps the
+    # error understandable instead of a timeout after several seconds.
+    if re.search(r"\bWITH\s+RECURSIVE\b", upper):
+        return "Recursive queries are not allowed here."
     return None
 
 

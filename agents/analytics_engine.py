@@ -1,10 +1,17 @@
 """SQL analytics engine -- executes pre-built queries against the star schema."""
 
 import os
+import re
+import time
 
 import pandas as pd
+from pandas.errors import DatabaseError
+from sqlalchemy.exc import OperationalError
 
 from db.database import get_engine
+
+# Wall-clock ceiling for user-supplied queries in the SQL Explorer.
+QUERY_TIMEOUT_SECONDS = 5.0
 
 
 class AnalyticsEngine:
@@ -24,7 +31,13 @@ class AnalyticsEngine:
         return pd.read_sql(sql, self.engine)
 
     def execute_raw(self, sql: str) -> pd.DataFrame:
-        """Execute a read-only SQL query. Rejects write operations."""
+        """Execute a read-only SQL query under a time limit.
+
+        Rejects write operations, and aborts anything still running after
+        QUERY_TIMEOUT_SECONDS. Without the limit a query that is read-only but
+        unbounded (a recursive CTE, say) keeps a shared deployment busy for
+        every visitor.
+        """
         normalized = sql.strip().upper()
         forbidden = (
             "INSERT",
@@ -36,10 +49,41 @@ class AnalyticsEngine:
             "ATTACH",
             "DETACH",
             "PRAGMA",
+            "VACUUM",
+            "REPLACE",
         )
-        if any(normalized.startswith(kw) for kw in forbidden):
+        # Scan every word, not just the first: a write can sit anywhere in the
+        # statement, and pragmas are also reachable as pragma_* functions.
+        tokens = set(re.findall(r"[A-Za-z_]+", normalized))
+        if tokens & set(forbidden) or any(t.startswith("PRAGMA_") for t in tokens):
             raise ValueError("Only SELECT queries are allowed")
-        return pd.read_sql(sql, self.engine)
+
+        with self.engine.connect() as conn:
+            self._apply_timeout(conn, QUERY_TIMEOUT_SECONDS)
+            try:
+                return pd.read_sql(sql, conn)
+            except (OperationalError, DatabaseError) as exc:
+                # pandas wraps the driver error, so match on the message rather
+                # than on the exception type.
+                if "interrupted" in str(exc).lower():
+                    raise ValueError(
+                        f"Query cancelled after {QUERY_TIMEOUT_SECONDS} seconds."
+                    ) from exc
+                raise
+
+    @staticmethod
+    def _apply_timeout(conn, seconds: float) -> None:
+        """Abort the query once `seconds` have passed, on SQLite.
+
+        SQLite calls the progress handler every N virtual-machine steps; a
+        non-zero return aborts the statement. Other backends are left alone.
+        """
+        raw = getattr(conn.connection, "dbapi_connection", conn.connection)
+        handler = getattr(raw, "set_progress_handler", None)
+        if handler is None:
+            return
+        deadline = time.monotonic() + seconds
+        handler(lambda: 1 if time.monotonic() > deadline else 0, 10_000)
 
     def get_kpis(self) -> dict:
         """Calculate executive KPI snapshot."""
