@@ -5,8 +5,14 @@ import os
 import subprocess
 import sys
 
-from agents.analytics_engine import AnalyticsEngine
-from agents.orchestrator import PipelineOrchestrator
+from dotenv import load_dotenv
+
+# Load .env before the agent imports: db/database.py reads DATABASE_PATH at
+# module level, so a file loaded any later would have no effect.
+load_dotenv()
+
+from agents.analytics_engine import AnalyticsEngine  # noqa: E402
+from agents.orchestrator import PipelineOrchestrator  # noqa: E402
 
 
 def generate_sample_data():

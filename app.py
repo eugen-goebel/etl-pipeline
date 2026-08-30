@@ -11,10 +11,15 @@ import matplotlib.ticker as ticker
 import pandas as pd
 import seaborn as sns
 import streamlit as st
+from dotenv import load_dotenv
 
-from agents import run_recorder
-from agents.analytics_engine import AnalyticsEngine
-from db.database import execute_sql, get_engine
+# Load .env before the imports below: db/database.py reads DATABASE_PATH at
+# module level, so a file loaded any later would have no effect.
+load_dotenv()
+
+from agents import run_recorder  # noqa: E402
+from agents.analytics_engine import AnalyticsEngine  # noqa: E402
+from db.database import execute_sql, get_engine  # noqa: E402
 
 DB_PATH = "output/shopflow.db"
 # Bump when the sample data content changes, so a hosted deploy that still
