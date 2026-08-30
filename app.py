@@ -272,7 +272,7 @@ def page_products():
 
     st.subheader("Top Products by Category")
     top_prod = load_query("top_products_by_category")
-    st.dataframe(top_prod, use_container_width=True)
+    st.dataframe(top_prod, width="stretch")
 
     col1, col2 = st.columns(2)
 
@@ -300,7 +300,7 @@ def page_products():
 
     st.subheader("Supplier Scorecard")
     supp = load_query("supplier_scorecard")
-    st.dataframe(supp, use_container_width=True)
+    st.dataframe(supp, width="stretch")
 
 
 def page_quality():
@@ -343,7 +343,7 @@ def page_quality():
         engine=eng,
     )
     if issues:
-        st.dataframe(pd.DataFrame(issues), use_container_width=True)
+        st.dataframe(pd.DataFrame(issues), width="stretch")
     else:
         st.success("No data quality issues found.")
 
@@ -364,7 +364,7 @@ def page_sql_explorer():
             st.code(sql_text, language="sql")
         if st.button("Execute Query"):
             df = engine.execute_query(selected)
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, width="stretch")
 
     st.subheader("Custom SQL")
     custom_sql = st.text_area(
@@ -377,7 +377,7 @@ def page_sql_explorer():
         elif custom_sql.strip():
             try:
                 df = engine.execute_raw(custom_sql.strip().rstrip(";").strip())
-                st.dataframe(df, use_container_width=True)
+                st.dataframe(df, width="stretch")
             except (ValueError, TypeError) as exc:
                 st.error(f"Invalid query: {exc}")
             except Exception as exc:
@@ -430,7 +430,7 @@ def page_pipeline_runs():
         "quality_score",
         "error_message",
     ]
-    st.dataframe(df[display_cols], use_container_width=True, hide_index=True)
+    st.dataframe(df[display_cols], width="stretch", hide_index=True)
 
     # Latest-run drill-down
     latest = df.iloc[0]
