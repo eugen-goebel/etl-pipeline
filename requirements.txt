@@ -1,3 +1,8 @@
+# Runtime dependencies for the Streamlit Cloud demo.
+# pyproject.toml + uv.lock stay the source of truth for local dev and CI.
+# This is the subset the dashboard (app.py) needs at runtime. faker is
+# included because app.py rebuilds the demo database on a cold start by
+# running data/generate_sample_data.py in a subprocess.
 streamlit>=1.62.0
 pandas>=3.0.5
 numpy>=2.5.2; python_version >= "3.12"
@@ -7,5 +12,3 @@ pydantic>=2.13.4
 matplotlib>=3.11.1
 seaborn>=0.13.2
 faker>=40.37.0
-pytest>=9.1.1
-python-dotenv>=1.2.3
