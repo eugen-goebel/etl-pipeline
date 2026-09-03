@@ -28,6 +28,34 @@ DATA_VERSION = "2"
 VERSION_PATH = DB_PATH + ".version"
 COLORS = ["#1f77b4", "#2ca02c", "#17becf", "#ff7f0e", "#9467bd", "#d62728"]
 
+# The sample generator writes plain numbers with no unit attached, so every
+# money figure on the dashboard was rendered bare: "4.76M" next to "416.83"
+# next to "11,429" gave a reader no way to tell an amount from a count.
+# The demo data is a fictional US shop, so it is labelled USD here in one
+# place rather than hardcoded into a dozen format strings.
+CURRENCY = "USD"
+CURRENCY_SYMBOL = "$"
+
+
+def money(value: float) -> str:
+    """Format a money amount with its symbol and two decimals."""
+    return f"{CURRENCY_SYMBOL}{value:,.2f}"
+
+
+def money_compact(value: float) -> str:
+    """Format a large money amount as millions or thousands."""
+    if abs(value) >= 1e6:
+        return f"{CURRENCY_SYMBOL}{value / 1e6:,.2f}M"
+    if abs(value) >= 1e3:
+        return f"{CURRENCY_SYMBOL}{value / 1e3:,.1f}K"
+    return money(value)
+
+
+def money_axis_formatter() -> ticker.FuncFormatter:
+    """Axis formatter that keeps the currency symbol on chart ticks."""
+    return ticker.FuncFormatter(lambda x, _pos: f"{CURRENCY_SYMBOL}{x:,.0f}")
+
+
 sns.set_style("whitegrid")
 # Keep the sidebar open on load: the six-page navigation lives there, and a
 # collapsed sidebar hides everything past the Executive Overview.
@@ -183,11 +211,12 @@ def page_overview():
 
     kpis = load_kpis()
     c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Total Revenue", f"{kpis['total_revenue'] / 1e6:.2f}M")
+    c1.metric("Total Revenue", money_compact(kpis["total_revenue"]))
     c2.metric("Total Orders", f"{int(kpis['total_orders']):,}")
-    c3.metric("Avg Order Value", f"{kpis['avg_order_value']:,.2f}")
+    c3.metric("Avg Order Value", money(kpis["avg_order_value"]))
     c4.metric("Unique Customers", f"{int(kpis['unique_customers']):,}")
     c5.metric("Return Rate", f"{kpis['return_rate']:.1f}%")
+    st.caption(f"All monetary figures in {CURRENCY}.")
 
     st.subheader("Monthly Revenue Trend")
     df = load_query("revenue_trends")
@@ -197,8 +226,8 @@ def page_overview():
     ax.fill_between(range(len(df)), df["revenue"], alpha=0.15, color=COLORS[0])
     ax.set_xticks(range(0, len(df), max(1, len(df) // 12)))
     ax.set_xticklabels([labels[i] for i in range(0, len(df), max(1, len(df) // 12))], rotation=45)
-    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
-    ax.set_ylabel("Revenue")
+    ax.yaxis.set_major_formatter(money_axis_formatter())
+    ax.set_ylabel(f"Revenue ({CURRENCY})")
     plt.tight_layout()
     show_fig(fig)
 
@@ -211,8 +240,8 @@ def page_overview():
     """)
     fig2, ax2 = plt.subplots(figsize=(8, 4))
     ax2.barh(cat_df["category"], cat_df["revenue"], color=COLORS[: len(cat_df)])
-    ax2.xaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
-    ax2.set_xlabel("Revenue")
+    ax2.xaxis.set_major_formatter(money_axis_formatter())
+    ax2.set_xlabel(f"Revenue ({CURRENCY})")
     plt.tight_layout()
     show_fig(fig2)
 
@@ -266,8 +295,8 @@ def page_customers():
         ax3.bar(range(len(top20)), top20["total_spent"], color=COLORS[0])
         ax3.set_xticks(range(len(top20)))
         ax3.set_xticklabels(top20["customer_id"], rotation=45, ha="right")
-        ax3.yaxis.set_major_formatter(ticker.StrMethodFormatter("{x:,.0f}"))
-        ax3.set_ylabel("Lifetime Value")
+        ax3.yaxis.set_major_formatter(money_axis_formatter())
+        ax3.set_ylabel(f"Lifetime Value ({CURRENCY})")
         plt.tight_layout()
         show_fig(fig3)
 

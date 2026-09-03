@@ -140,6 +140,47 @@ class TestAppSmoke:
         assert not by_label["Unique Customers"].endswith(".0")
 
 
+class TestMoneyFormatting:
+    """Money figures must carry their unit.
+
+    Regression: the header read "4.76M" next to "416.83" next to "11,429"
+    with nothing marking which of those is an amount and which is a count.
+    """
+
+    def test_money_helpers_attach_the_symbol(self):
+        import app
+
+        assert app.money(416.83) == "$416.83"
+        assert app.money_compact(4_762_431.55) == "$4.76M"
+        assert app.money_compact(12_500.0) == "$12.5K"
+        assert app.money_compact(42.5) == "$42.50"
+
+    def test_revenue_metrics_are_rendered_with_a_currency(self):
+        at = AppTest.from_file(APP_PATH, default_timeout=180)
+        at.run()
+
+        by_label = {m.label: str(m.value) for m in at.metric}
+        assert by_label["Total Revenue"].startswith("$")
+        assert by_label["Avg Order Value"].startswith("$")
+        # Counts must stay plain, a customer count is not an amount.
+        assert not by_label["Total Orders"].startswith("$")
+        assert not by_label["Unique Customers"].startswith("$")
+
+    def test_the_currency_is_stated_once_on_the_page(self):
+        at = AppTest.from_file(APP_PATH, default_timeout=180)
+        at.run()
+
+        import app
+
+        assert any(app.CURRENCY in c.value for c in at.caption)
+
+    def test_money_axis_ticks_keep_the_symbol(self):
+        import app
+
+        formatter = app.money_axis_formatter()
+        assert formatter(150000, 0) == "$150,000"
+
+
 class TestConcurrentDemoBuild:
     def test_parallel_builds_leave_a_valid_database(self, tmp_path):
         """Regression for the cold-start race on Streamlit Cloud.
