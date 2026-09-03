@@ -55,6 +55,7 @@ def money_axis_formatter() -> ticker.FuncFormatter:
     """Axis formatter that keeps the currency symbol on chart ticks."""
     return ticker.FuncFormatter(lambda x, _pos: f"{CURRENCY_SYMBOL}{x:,.0f}")
 
+
 sns.set_style("whitegrid")
 # Keep the sidebar open on load: the six-page navigation lives there, and a
 # collapsed sidebar hides everything past the Executive Overview.
