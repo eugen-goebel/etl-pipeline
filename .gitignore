@@ -11,8 +11,6 @@ venv/
 .idea/
 .DS_Store
 Thumbs.db
-output/*.db
-output/*.csv
 data/raw/*.csv
 data/raw/*.json
 
@@ -20,3 +18,8 @@ data/raw/*.json
 .coverage
 coverage.xml
 htmlcov/
+
+# Generated reports and exports. Every format the project can write,
+# not just the one that happened to be tested first.
+output/*
+!output/.gitkeep
