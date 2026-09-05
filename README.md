@@ -78,7 +78,7 @@ Raw Data (CSV/JSON)
 - **Star schema dimensional modeling**: 4 dimensions + 1 fact table + daily aggregates
 - **15 pre-built SQL analytics queries** using window functions, CTEs, NTILE, DENSE_RANK
 - **Streamlit dashboard** with 5 pages: Executive Overview, Customer Analytics, Product & Supply Chain, Data Quality, SQL Explorer
-- **60+ automated tests** with pytest
+- **112 automated tests** with pytest
 - **German locale sample data** via Faker (2K customers, 12K orders, 300 products)
 
 ## Tech Stack
@@ -206,7 +206,7 @@ etl-pipeline/
 ├── data/
 │   ├── generate_sample_data.py
 │   └── raw/                   # Generated sample data
-├── tests/                     # 60+ pytest tests
+├── tests/                     # 112 pytest tests
 ├── app.py                     # Streamlit dashboard (5 pages)
 ├── main.py                    # CLI entry point
 ├── requirements.txt
