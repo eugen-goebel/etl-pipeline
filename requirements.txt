@@ -12,5 +12,5 @@ sqlalchemy>=2.0.52
 pydantic>=2.13.4
 matplotlib>=3.11.1
 seaborn>=0.13.2
-faker>=40.37.0
+faker>=40.38.0
 python-dotenv>=1.2.3
