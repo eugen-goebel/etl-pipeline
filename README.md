@@ -77,7 +77,7 @@ Raw Data (CSV/JSON)
 - **Data quality validation**: null checks, business rules, referential integrity, quarantine
 - **Star schema dimensional modeling**: 4 dimensions + 1 fact table + daily aggregates
 - **15 pre-built SQL analytics queries** using window functions, CTEs, NTILE, DENSE_RANK
-- **Streamlit dashboard** with 5 pages: Executive Overview, Customer Analytics, Product & Supply Chain, Data Quality, SQL Explorer
+- **Streamlit dashboard** with 6 pages: Executive Overview, Customer Analytics, Product & Supply Chain, Data Quality, Pipeline Runs, SQL Explorer
 - **112 automated tests** with pytest
 - **German locale sample data** via Faker (2K customers, 12K orders, 300 products)
 
@@ -207,7 +207,7 @@ etl-pipeline/
 │   ├── generate_sample_data.py
 │   └── raw/                   # Generated sample data
 ├── tests/                     # 112 pytest tests
-├── app.py                     # Streamlit dashboard (5 pages)
+├── app.py                     # Streamlit dashboard (6 pages)
 ├── main.py                    # CLI entry point
 ├── requirements.txt
 └── LICENSE
