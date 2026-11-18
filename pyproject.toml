@@ -12,7 +12,7 @@ dependencies = [
     "pydantic>=2.14.3",
     "matplotlib>=3.11.2",
     "seaborn>=0.13.2",
-    "faker>=40.44.0",
+    "faker>=40.54.0",
     "python-dotenv>=1.2.4",
 ]
 
